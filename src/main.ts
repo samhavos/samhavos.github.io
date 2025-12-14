@@ -70,31 +70,34 @@ if (!app) {
   throw new Error("Missing root container");
 }
 
+app.classList.add("app");
 app.innerHTML = `
-  <header>
-    <div class="field-group repo-group">
-      <label for="repo-input">Data repository</label>
-      <input id="repo-input" name="repo" placeholder="owner/name or https://github.com/owner/name" autocomplete="off" />
-      <button id="repo-apply" type="button">Connect</button>
+  <header class="app__header">
+    <div class="app__control-group app__control-group--repo">
+      <label class="app__control-label" for="repo-input">Data repository</label>
+      <input class="app__control-input" id="repo-input" name="repo" placeholder="owner/name or https://github.com/owner/name" autocomplete="off" />
+      <button class="app__button app__button--connect" id="repo-apply" type="button">Connect</button>
     </div>
-    <div class="field-group token-group">
-      <label for="token-input">GitHub token (optional)</label>
-      <input id="token-input" name="token" type="password" autocomplete="off" placeholder="ghp_..." />
-      <div class="checkbox-row">
-        <input id="token-remember" type="checkbox" />
-        <label for="token-remember">Remember token on this device</label>
+    <div class="app__control-group app__control-group--token">
+      <label class="app__control-label" for="token-input">GitHub token (optional)</label>
+      <input class="app__control-input" id="token-input" name="token" type="password" autocomplete="off" placeholder="ghp_..." />
+      <div class="app__checkbox-row">
+        <input class="app__checkbox" id="token-remember" type="checkbox" />
+        <label class="app__checkbox-label" for="token-remember">Remember token on this device</label>
       </div>
-      <button id="token-apply" type="button">Update Token</button>
+      <button class="app__button app__button--token" id="token-apply" type="button">Update Token</button>
     </div>
-    <button id="sign-out" type="button">Sign out</button>
+    <button class="app__button app__button--sign-out" id="sign-out" type="button">Sign out</button>
   </header>
-  <main>
-    <div class="board-meta">
-      <label for="board-select">Board</label>
-      <select id="board-select"></select>
-      <span id="board-info"></span>
+  <main class="app__main">
+    <div class="board">
+      <div class="board__meta">
+        <label class="board__label" for="board-select">Board</label>
+        <select class="board__select" id="board-select"></select>
+        <span class="board__info" id="board-info"></span>
+      </div>
+      <div class="board__grid" id="board-grid" aria-busy="false"></div>
     </div>
-    <div class="board-grid" id="board-grid" aria-busy="false"></div>
   </main>
   <footer class="status" id="status"></footer>
 `;
@@ -454,12 +457,12 @@ function renderBoard(board: LoadedBoard | null): void {
   doc.items.forEach((item, index) => {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "board-square";
+    button.className = "board__square";
     button.dataset.index = index.toString();
     button.textContent = item.text || "\u00A0";
 
     if (item.checkedAt) {
-      button.classList.add("checked");
+      button.classList.add("board__square--checked");
     }
 
     button.addEventListener("click", () => {
@@ -714,8 +717,8 @@ function setStatus(message: StatusMessage): void {
   elements.status.textContent = message.text;
   elements.status.className = "status";
   if (message.level === "error") {
-    elements.status.classList.add("error");
+    elements.status.classList.add("status--error");
   } else if (message.level === "success") {
-    elements.status.classList.add("success");
+    elements.status.classList.add("status--success");
   }
 }

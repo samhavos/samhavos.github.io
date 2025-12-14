@@ -14,7 +14,7 @@ body {
   min-height: 100vh;
 }
 
-#app {
+.app {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -23,34 +23,38 @@ body {
   margin: 0 auto;
 }
 
-header {
+.app__header {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
 }
 
-header .field-group {
+.app__control-group {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  min-width: 220px;
+  flex: 1 1 280px;
 }
 
-header label {
+.app__control-label,
+.board__label {
   font-size: 0.85rem;
   font-weight: 600;
   color: #4b5563;
 }
 
-header input {
+.app__control-input,
+.board__select {
   padding: 0.5rem 0.75rem;
   border: 1px solid #d1d5db;
   border-radius: 0.375rem;
   font-size: 1rem;
 }
 
-header button {
+.app__button {
   padding: 0.6rem 1rem;
   border-radius: 0.375rem;
   border: none;
@@ -60,37 +64,64 @@ header button {
   cursor: pointer;
 }
 
-header button:disabled {
+.app__button:disabled {
   background-color: #9ca3af;
   cursor: not-allowed;
 }
 
-main {
+.app__checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.app__checkbox {
+  width: 1rem;
+  height: 1rem;
+}
+
+.app__checkbox-label {
+  cursor: pointer;
+}
+
+.app__main {
   display: grid;
   gap: 1rem;
 }
 
-.board-meta {
+.board {
+  display: grid;
+  gap: 1rem;
+}
+
+.board__meta {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
   align-items: center;
 }
 
-.board-grid {
+.board__info {
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+.board__grid {
   display: grid;
   gap: 1px;
   background-color: #9ca3af;
 }
 
-.board-grid[aria-busy="true"] {
+.board__grid[aria-busy="true"] {
   opacity: 0.6;
   pointer-events: none;
 }
 
-.board-square {
+.board__square {
   background-color: #fff;
   min-height: 100px;
+  aspect-ratio: 1 / 1;
   padding: 0.75rem;
   display: flex;
   align-items: center;
@@ -100,7 +131,7 @@ main {
   transition: background-color 0.2s ease;
 }
 
-.board-square.checked {
+.board__square--checked {
   background-color: #d1fae5;
   text-decoration: line-through;
 }
@@ -112,25 +143,12 @@ main {
   color: #1f2937;
 }
 
-.status.error {
+.status--error {
   background-color: #fee2e2;
   color: #991b1b;
 }
 
-.status.success {
+.status--success {
   background-color: #dcfce7;
   color: #14532d;
-}
-
-select {
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.375rem;
-  border: 1px solid #d1d5db;
-}
-
-.checkbox-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
 }
