@@ -33,8 +33,8 @@ Data Model Summary
 	- `checkedAt` is optional; omit it for unchecked squares. No additional history/milestones stored.
 
 Authentication & Permissions
-- Primary approach: GitHub App with Device Authorization flow scoped to `contents: write` on the chosen data repo.
-- Fallback: user-entered fine-grained PAT limited to repository contents.
+- Primary approach: user-entered fine-grained PAT limited to repository contents.
+- Optional fallback: machine account PAT shared with trusted facilitators for emergencies only.
 - Tokens remain in memory by default; optional opt-in persistence with clear warnings.
 - Display authenticated GitHub username and provide sign-out to revoke local state.
 

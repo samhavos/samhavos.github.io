@@ -32,7 +32,7 @@ Sync Workflow
 Data Repo Flexibility
 - Since the data repo is public, any deployment or local dev environment can read boards without auth.
 - Frontend prompts users for repo coordinates, so staging/experimental repos are easy to target.
-- Write permissions are limited via GitHub App or PAT scopes to prevent broad access.
+- Write permissions are limited via fine-grained PAT scopes to prevent broad access.
 
 Open Considerations
 - Decide whether the Pages fork should keep build artifacts alongside source or maintain a build-only branch (e.g., `pages`).

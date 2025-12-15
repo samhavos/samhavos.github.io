@@ -16,8 +16,7 @@ Implementation Plan (Draft)
 - Render grid using vanilla DOM updates or small reactive helpers; recompute bingo lines for visuals.
 
 4. Authentication & Write Flow
-- Implement GitHub App device authorization flow (start, poll, success, error states).
-- Provide toggle to use manual PAT entry for development.
+- Implement fine-grained PAT entry UI with optional persistence and validation pings.
 - When a tile is toggled:
 	- Update `checkedAt` timestamp in memory.
 	- Serialize with `JSON.stringify(board, null, 2)`.
