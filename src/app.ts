@@ -7,6 +7,7 @@ import { decodeBase64, encodeBase64 } from "./encoding";
 import { fetchBoardContent, fetchBoardDirectory, fetchRepoDetails, GithubError, putBoardContent } from "./github";
 import { parseRepoInput } from "./repo";
 import { clearToken, loadStoredRepo, loadTokenState, storeRepo, storeToken } from "./storage";
+import type { QueryHints } from "./routing";
 import type {
   BoardDocument,
   BoardSummary,
@@ -22,8 +23,9 @@ const INITIAL_STATUS: StatusMessage = {
 
 /**
  * Wire up the DOM, restore stored preferences, and start the application.
+ * Accepts optional query-derived hints for repo, board, and token.
  */
-export function initializeApp(): void {
+export function initializeApp(hints: QueryHints = {}): void {
   const app = document.getElementById("app");
   if (!app) {
     throw new Error("Missing root container");
@@ -90,18 +92,59 @@ export function initializeApp(): void {
     isCommitting: false
   };
 
-  setStatus(INITIAL_STATUS);
+  let pendingBoardHint: string | null = hints.board ?? null;
+  let statusInitialized = false;
+
+  applyQueryHints();
   hydrateFromStorage();
   attachEventHandlers();
   refreshBoardOptions();
+
+  if (!statusInitialized) {
+    setStatus(INITIAL_STATUS);
+  }
 
   if (state.repo) {
     void connectToRepo(elements.repoInput.value.trim());
   }
 
+  function applyQueryHints(): void {
+    const applied: string[] = [];
+    const ignored: string[] = [];
+
+    if (hints.repo) {
+      const parsed = parseRepoInput(hints.repo);
+      if (parsed) {
+        state.repo = parsed;
+        elements.repoInput.value = `${parsed.owner}/${parsed.name}`;
+        applied.push(`repo ${parsed.owner}/${parsed.name}`);
+      } else {
+        elements.repoInput.value = hints.repo;
+        ignored.push("repo");
+      }
+    }
+
+    if (hints.token) {
+      state.token = hints.token;
+      elements.tokenInput.value = hints.token;
+      elements.tokenRemember.checked = false;
+      applied.push("token (not stored)");
+    }
+
+    if (pendingBoardHint) {
+      applied.push(`board ${pendingBoardHint}`);
+    }
+
+    if (ignored.length > 0) {
+      setStatus({ level: "error", text: `Ignored URL parameter(s): ${ignored.join(", ")}.` });
+    } else if (applied.length > 0) {
+      setStatus({ level: "info", text: `Using URL parameters: ${applied.join(", ")}.` });
+    }
+  }
+
   function hydrateFromStorage(): void {
     const storedRepo = loadStoredRepo();
-    if (storedRepo) {
+    if (!state.repo && storedRepo) {
       const parsed = parseRepoInput(storedRepo);
       if (parsed) {
         state.repo = parsed;
@@ -110,10 +153,15 @@ export function initializeApp(): void {
     }
 
     const tokenState = loadTokenState();
-    state.token = tokenState.token;
-    elements.tokenRemember.checked = tokenState.remember;
-    if (tokenState.token) {
+    if (!state.token && tokenState.token) {
+      state.token = tokenState.token;
       elements.tokenInput.value = tokenState.token;
+    }
+
+    if (hints.token) {
+      elements.tokenRemember.checked = false;
+    } else {
+      elements.tokenRemember.checked = tokenState.remember;
     }
   }
 
@@ -218,10 +266,26 @@ export function initializeApp(): void {
       }
 
       const selectedPath = elements.boardSelect.value;
-      const firstBoard = state.boards.find((entry) => entry.path === selectedPath) ?? state.boards[0];
-      if (firstBoard) {
-        elements.boardSelect.value = firstBoard.path;
-        await loadBoard(firstBoard);
+      let boardToLoad: BoardSummary | null = null;
+
+      if (pendingBoardHint) {
+        const match = resolveBoardHint(pendingBoardHint, state.boards);
+        if (match) {
+          boardToLoad = match;
+          pendingBoardHint = null;
+        } else {
+          setStatus({ level: "info", text: `Board "${pendingBoardHint}" not found; showing default.` });
+          pendingBoardHint = null;
+        }
+      }
+
+      if (!boardToLoad) {
+        boardToLoad = state.boards.find((entry) => entry.path === selectedPath) ?? state.boards[0] ?? null;
+      }
+
+      if (boardToLoad) {
+        elements.boardSelect.value = boardToLoad.path;
+        await loadBoard(boardToLoad);
       }
       setStatus({ level: "success", text: `Loaded ${state.boards.length} board file(s).` });
     } catch (error) {
@@ -239,6 +303,18 @@ export function initializeApp(): void {
       state.boards = [];
       refreshBoardOptions();
     }
+  }
+
+  function resolveBoardHint(hint: string, boards: BoardSummary[]): BoardSummary | undefined {
+    const normalized = hint.startsWith("boards/") ? hint : `boards/${hint}`;
+    const filename = normalized.split("/").pop();
+
+    return (
+      boards.find((board) => board.path === normalized) ??
+      boards.find((board) => board.path === hint) ??
+      boards.find((board) => board.name === hint) ??
+      (filename ? boards.find((board) => board.name === filename) : undefined)
+    );
   }
 
   async function loadBoard(summary: BoardSummary): Promise<void> {
@@ -458,5 +534,6 @@ export function initializeApp(): void {
     } else if (message.level === "success") {
       elements.status.classList.add("status--success");
     }
+    statusInitialized = true;
   }
 }

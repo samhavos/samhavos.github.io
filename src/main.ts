@@ -3,5 +3,8 @@
  */
 
 import { initializeApp } from "./app";
+import { clearQueryHints, parseQueryHints } from "./routing";
 
-initializeApp();
+const hints = parseQueryHints();
+initializeApp(hints);
+clearQueryHints();
