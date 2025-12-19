@@ -31,8 +31,13 @@ export function initializeApp(hints: QueryHints = {}): void {
     throw new Error("Missing root container");
   }
 
-  app.classList.add("app");
-  app.innerHTML = `
+  const root = app as HTMLDivElement;
+
+  root.classList.add("app");
+  root.innerHTML = `
+    <button class="app__fullscreen-toggle" id="fullscreen-toggle" type="button" aria-pressed="false" aria-label="Toggle fullscreen">
+      Fullscreen
+    </button>
     <header class="app__header">
       <div class="app__control-group app__control-group--repo">
         <label class="app__control-label" for="repo-input">Data repository</label>
@@ -73,7 +78,8 @@ export function initializeApp(hints: QueryHints = {}): void {
     boardSelect: document.getElementById("board-select") as HTMLSelectElement,
     boardGrid: document.getElementById("board-grid") as HTMLDivElement,
     boardInfo: document.getElementById("board-info") as HTMLSpanElement,
-    status: document.getElementById("status") as HTMLDivElement
+    status: document.getElementById("status") as HTMLDivElement,
+    fullscreenToggle: document.getElementById("fullscreen-toggle") as HTMLButtonElement
   };
 
   const state: {
@@ -83,13 +89,15 @@ export function initializeApp(hints: QueryHints = {}): void {
     boards: BoardSummary[];
     currentBoard: LoadedBoard | null;
     isCommitting: boolean;
+    isFullscreen: boolean;
   } = {
     repo: null,
     defaultBranch: null,
     token: null,
     boards: [],
     currentBoard: null,
-    isCommitting: false
+    isCommitting: false,
+    isFullscreen: false
   };
 
   let pendingBoardHint: string | null = hints.board ?? null;
@@ -98,6 +106,7 @@ export function initializeApp(hints: QueryHints = {}): void {
   applyQueryHints();
   hydrateFromStorage();
   attachEventHandlers();
+  toggleFullscreen(false);
   refreshBoardOptions();
 
   if (!statusInitialized) {
@@ -213,6 +222,10 @@ export function initializeApp(hints: QueryHints = {}): void {
       if (summary) {
         void loadBoard(summary);
       }
+    });
+
+    elements.fullscreenToggle.addEventListener("click", () => {
+      toggleFullscreen(!state.isFullscreen);
     });
   }
 
@@ -535,5 +548,16 @@ export function initializeApp(hints: QueryHints = {}): void {
       elements.status.classList.add("status--success");
     }
     statusInitialized = true;
+  }
+
+  function toggleFullscreen(nextState: boolean): void {
+    state.isFullscreen = nextState;
+    root.classList.toggle("app--fullscreen", state.isFullscreen);
+    elements.fullscreenToggle.textContent = state.isFullscreen ? "Exit fullscreen" : "Fullscreen";
+    elements.fullscreenToggle.setAttribute("aria-pressed", state.isFullscreen ? "true" : "false");
+    elements.fullscreenToggle.setAttribute(
+      "aria-label",
+      state.isFullscreen ? "Exit fullscreen" : "Enter fullscreen"
+    );
   }
 }
