@@ -62,7 +62,9 @@ export function initializeApp(hints: QueryHints = {}): void {
           <select class="board__select" id="board-select"></select>
           <span class="board__info" id="board-info"></span>
         </div>
-        <div class="board__grid" id="board-grid" aria-busy="false"></div>
+        <div class="board__grid-container">
+          <div class="board__grid" id="board-grid" aria-busy="false"></div>
+        </div>
       </div>
     </main>
     <footer class="status" id="status"></footer>
