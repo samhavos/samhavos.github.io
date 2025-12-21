@@ -71,6 +71,7 @@ export function initializeApp(hints: QueryHints = {}): void {
   `;
 
   const elements = {
+    body: document.body,
     repoInput: document.getElementById("repo-input") as HTMLInputElement,
     repoApply: document.getElementById("repo-apply") as HTMLButtonElement,
     tokenInput: document.getElementById("token-input") as HTMLInputElement,
@@ -104,6 +105,7 @@ export function initializeApp(hints: QueryHints = {}): void {
 
   let pendingBoardHint: string | null = hints.board ?? null;
   let statusInitialized = false;
+  let prefersDark = window.matchMedia("(prefers-color-scheme: dark)");
 
   applyQueryHints();
   hydrateFromStorage();
@@ -229,7 +231,13 @@ export function initializeApp(hints: QueryHints = {}): void {
     elements.fullscreenToggle.addEventListener("click", () => {
       toggleFullscreen(!state.isFullscreen);
     });
+
+    prefersDark.addEventListener("change", ({ matches }) => {
+      updateDarkMode(matches);
+    });
   }
+
+  updateDarkMode(prefersDark.matches);
 
   async function connectToRepo(inputValue: string): Promise<void> {
     const parsed = parseRepoInput(inputValue);
@@ -561,5 +569,29 @@ export function initializeApp(hints: QueryHints = {}): void {
       "aria-label",
       state.isFullscreen ? "Exit fullscreen" : "Enter fullscreen"
     );
+    updateBoardLayout();
+  }
+
+  function updateDarkMode(isDark: boolean): void {
+    elements.body.classList.toggle("body--dark", isDark);
+    root.classList.toggle("app--dark", isDark);
+    elements.status.classList.toggle("status--dark", isDark);
+    elements.fullscreenToggle.classList.toggle("app__fullscreen-toggle--dark", isDark);
+  }
+
+  function updateBoardLayout(): void {
+    const grid = elements.boardGrid;
+    if (!grid) {
+      return;
+    }
+
+    const parent = grid.parentElement as HTMLElement | null;
+    if (!parent) {
+      return;
+    }
+
+    const availableSize = Math.min(parent.clientWidth, parent.clientHeight);
+    grid.style.width = `${availableSize}px`;
+    grid.style.height = `${availableSize}px`;
   }
 }

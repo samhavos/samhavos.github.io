@@ -14,6 +14,11 @@ body {
   min-height: 100vh;
 }
 
+.body--dark {
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+
 .app {
   display: flex;
   flex-direction: column;
@@ -173,6 +178,65 @@ body {
 .board__square--checked {
   background-color: #d1fae5;
   text-decoration: line-through;
+}
+
+.app--dark {
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+
+.app--dark .app__header {
+  color: inherit;
+}
+
+.app--dark .app__control-input,
+.app--dark .board__select {
+  background-color: #111827;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+.app--dark .app__control-label,
+.app--dark .board__label,
+.app--dark .board__info {
+  color: #cbd5f5;
+}
+
+.app--dark .board__grid {
+  background-color: #1f2937;
+}
+
+.app--dark .board__square {
+  background-color: #1e293b;
+  color: #f8fafc;
+}
+
+.app--dark .board__square--checked {
+  background-color: #065f46;
+  color: #ecfdf5;
+}
+
+.app--dark .status {
+  background-color: #1e293b;
+  color: #f8fafc;
+}
+
+.app--dark .status--error {
+  background-color: #7f1d1d;
+}
+
+.app--dark .status--success {
+  background-color: #065f46;
+}
+
+.app__fullscreen-toggle--dark {
+  background-color: rgba(148, 163, 184, 0.85);
+  color: #0f172a;
+}
+
+.app__fullscreen-toggle--dark:hover,
+.app__fullscreen-toggle--dark:focus-visible {
+  background-color: rgba(148, 163, 184, 0.95);
 }
 
 .status {
