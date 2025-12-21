@@ -173,11 +173,19 @@ body {
   text-align: center;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  border: none;
+  appearance: none;
+  outline: none;
 }
 
 .board__square--checked {
   background-color: #d1fae5;
   text-decoration: line-through;
+}
+
+.board__square:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
 }
 
 .app--dark {
@@ -209,6 +217,10 @@ body {
 .app--dark .board__square {
   background-color: #1e293b;
   color: #f8fafc;
+}
+
+.app--dark .board__square:focus-visible {
+  outline-color: #93c5fd;
 }
 
 .app--dark .board__square--checked {
