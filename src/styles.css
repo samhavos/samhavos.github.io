@@ -157,6 +157,43 @@ body {
   width: 100cqmin;
 }
 
+.board__grid-lines {
+  --board-line-thickness: clamp(4px, 1.2vw, 12px);
+  --board-line-color: rgba(220, 38, 38, 0.85);
+  aspect-ratio: 1 / 1;
+  display: none;
+  pointer-events: none;
+  position: absolute;
+  width: 100cqmin;
+  z-index: 2;
+}
+
+.board__grid-lines--visible {
+  display: block;
+}
+
+.board__grid-line {
+  background-color: var(--board-line-color);
+  border-radius: 999px;
+  position: absolute;
+}
+
+.board__grid-line--row {
+  height: var(--board-line-thickness);
+  width: 100%;
+}
+
+.board__grid-line--column {
+  height: 100%;
+  width: var(--board-line-thickness);
+}
+
+.board__grid-line--diag-primary,
+.board__grid-line--diag-secondary {
+  height: var(--board-line-thickness);
+  width: 140%;
+}
+
 .board__grid[aria-busy="true"] {
   opacity: 0.6;
   pointer-events: none;
@@ -212,6 +249,10 @@ body {
 
 .app--dark .board__grid {
   background-color: #1f2937;
+}
+
+.app--dark .board__grid-lines {
+  --board-line-color: rgba(248, 250, 252, 0.85);
 }
 
 .app--dark .board__square {

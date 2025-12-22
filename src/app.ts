@@ -64,6 +64,7 @@ export function initializeApp(hints: QueryHints = {}): void {
         </div>
         <div class="board__grid-container">
           <div class="board__grid" id="board-grid" aria-busy="false"></div>
+          <div class="board__grid-lines" id="board-lines" aria-hidden="true"></div>
         </div>
       </div>
     </main>
@@ -81,6 +82,7 @@ export function initializeApp(hints: QueryHints = {}): void {
     boardSelect: document.getElementById("board-select") as HTMLSelectElement,
     boardGrid: document.getElementById("board-grid") as HTMLDivElement,
     boardInfo: document.getElementById("board-info") as HTMLSpanElement,
+    boardLines: document.getElementById("board-lines") as HTMLDivElement,
     status: document.getElementById("status") as HTMLDivElement,
     fullscreenToggle: document.getElementById("fullscreen-toggle") as HTMLButtonElement
   };
@@ -393,6 +395,9 @@ export function initializeApp(hints: QueryHints = {}): void {
 
   function renderBoard(board: LoadedBoard | null): void {
     elements.boardGrid.innerHTML = "";
+    if (elements.boardLines) {
+      elements.boardLines.innerHTML = "";
+    }
     elements.boardInfo.textContent = "";
 
     if (!board) {
@@ -437,6 +442,76 @@ export function initializeApp(hints: QueryHints = {}): void {
 
       elements.boardGrid.appendChild(button);
     });
+
+    renderBingoLines(bingos, doc.size);
+  }
+
+  function renderBingoLines(lines: number[][], size: number): void {
+    if (!elements.boardLines) {
+      return;
+    }
+
+    if (lines.length === 0) {
+      elements.boardLines.className = "board__grid-lines";
+      return;
+    }
+
+    elements.boardLines.className = "board__grid-lines board__grid-lines--visible";
+
+    for (const lineIndices of lines) {
+      const line = document.createElement("div");
+      const orientation = determineLineOrientation(lineIndices, size);
+      line.className = `board__grid-line board__grid-line--${orientation}`;
+
+      switch (orientation) {
+        case "row": {
+          const rowIndex = Math.floor((lineIndices[0] ?? 0) / size);
+          const center = ((rowIndex + 0.5) / size) * 100;
+          line.style.top = `${center}%`;
+          line.style.left = "0";
+          line.style.transform = "translateY(-50%)";
+          break;
+        }
+        case "column": {
+          const colIndex = (lineIndices[0] ?? 0) % size;
+          const center = ((colIndex + 0.5) / size) * 100;
+          line.style.left = `${center}%`;
+          line.style.top = "0";
+          line.style.transform = "translateX(-50%)";
+          break;
+        }
+        case "diag-primary":
+        case "diag-secondary": {
+          line.style.left = "50%";
+          line.style.top = "50%";
+          line.style.transform = orientation === "diag-primary" ? "translate(-50%, -50%) rotate(45deg)" : "translate(-50%, -50%) rotate(-45deg)";
+          break;
+        }
+        default:
+          break;
+      }
+
+      elements.boardLines.appendChild(line);
+    }
+  }
+
+  function determineLineOrientation(lineIndices: number[], size: number): "row" | "column" | "diag-primary" | "diag-secondary" {
+    if (lineIndices.length < 2 || size <= 1) {
+      return "row";
+    }
+
+    const delta = lineIndices[1] - lineIndices[0];
+
+    if (delta === 1) {
+      return "row";
+    }
+    if (delta === size) {
+      return "column";
+    }
+    if (delta === size + 1) {
+      return "diag-primary";
+    }
+    return "diag-secondary";
   }
 
   async function handleSquareToggle(index: number): Promise<void> {
@@ -569,7 +644,6 @@ export function initializeApp(hints: QueryHints = {}): void {
       "aria-label",
       state.isFullscreen ? "Exit fullscreen" : "Enter fullscreen"
     );
-    updateBoardLayout();
   }
 
   function updateDarkMode(isDark: boolean): void {
@@ -577,21 +651,5 @@ export function initializeApp(hints: QueryHints = {}): void {
     root.classList.toggle("app--dark", isDark);
     elements.status.classList.toggle("status--dark", isDark);
     elements.fullscreenToggle.classList.toggle("app__fullscreen-toggle--dark", isDark);
-  }
-
-  function updateBoardLayout(): void {
-    const grid = elements.boardGrid;
-    if (!grid) {
-      return;
-    }
-
-    const parent = grid.parentElement as HTMLElement | null;
-    if (!parent) {
-      return;
-    }
-
-    const availableSize = Math.min(parent.clientWidth, parent.clientHeight);
-    grid.style.width = `${availableSize}px`;
-    grid.style.height = `${availableSize}px`;
   }
 }
