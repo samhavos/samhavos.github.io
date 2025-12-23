@@ -260,21 +260,19 @@ select {
 
 .board__grid-container {
   position: relative;
-  align-self: center;
-  width: min(100%, 28rem);
+  container: board / size;
+  flex: 1;
+  min-height: 0;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: var(--board-container-padding);
   background: var(--board-fill);
-  border: 3px solid var(--board-marker);
-  border-radius: 32px;
-  box-shadow: 14px 18px 0 var(--board-frame);
 }
 
 .board__grid {
   position: relative;
-  width: 100%;
+  width: 100cqmin;
   aspect-ratio: 1 / 1;
   display: grid;
   gap: clamp(0.45rem, 1.2vw, 0.75rem);
@@ -288,7 +286,11 @@ select {
 
 .board__grid-lines {
   position: absolute;
-  inset: var(--board-container-padding);
+  top: 50%;
+  left: 50%;
+  width: min(100cqmin, calc(100% - (var(--board-container-padding) * 2)));
+  height: min(100cqmin, calc(100% - (var(--board-container-padding) * 2)));
+  transform: translate(-50%, -50%);
   display: none;
   pointer-events: none;
   z-index: 2;
@@ -402,10 +404,4 @@ select {
 .app--fullscreen .status,
 .app--fullscreen .board__meta {
   display: none;
-}
-
-.app--fullscreen .board__grid-container {
-  width: min(92vmin, 32rem);
-  --board-container-padding: clamp(0.5rem, 2vw, 1rem);
-  box-shadow: 12px 12px 0 var(--board-frame);
 }
