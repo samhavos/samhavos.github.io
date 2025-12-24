@@ -34,7 +34,10 @@
   --board-line-width: clamp(2px, 0.7vw, 5px);
   --board-ink-fill: rgba(17, 17, 17, 0.14);
   --board-hover-fill: rgba(17, 17, 17, 0.08);
-  --board-strike-width: clamp(6px, 1.4vw, 14px);
+  --board-strike-width: clamp(4px, 1vw, 10px);
+  --board-strike-color: #d62828;
+  --board-cross-color: #1d4ed8;
+  --board-cross-stroke: clamp(4px, 1.1vw, 12px);
   --board-container-padding: clamp(0.5rem, 2vw, 1rem);
   --body-gradient: radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.94) 0%, rgba(230, 240, 255, 0.55) 55%, rgba(222, 231, 242, 0.4) 100%);
   background-color: var(--app-background);
@@ -92,7 +95,10 @@ select {
   --board-line-width: clamp(2px, 0.6vw, 5px);
   --board-ink-fill: rgba(226, 232, 240, 0.18);
   --board-hover-fill: rgba(148, 163, 184, 0.18);
-  --board-strike-width: clamp(6px, 1.4vw, 16px);
+  --board-strike-width: clamp(4px, 1vw, 12px);
+  --board-strike-color: #f87171;
+  --board-cross-color: #93c5fd;
+  --board-cross-stroke: clamp(4px, 1vw, 12px);
   --board-container-padding: clamp(0.5rem, 2vw, 1rem);
   --body-gradient: radial-gradient(circle at 20% 20%, rgba(15, 23, 42, 0.92) 0%, rgba(6, 11, 21, 0.98) 65%, rgba(3, 7, 15, 1) 100%);
 }
@@ -312,7 +318,7 @@ select {
 
 .board__grid-line {
   position: absolute;
-  background-color: var(--board-marker);
+  background-color: var(--board-strike-color);
   opacity: 0.9;
 }
 
@@ -370,15 +376,30 @@ select {
 }
 
 .board__square--checked {
-  background-image: repeating-linear-gradient(
-    135deg,
-    transparent 0 18px,
-    var(--board-ink-fill) 18px 26px
-  );
   color: var(--board-marker);
-  text-decoration: line-through;
-  text-decoration-color: var(--board-marker);
-  text-decoration-thickness: 3px;
+}
+
+.board__square--checked::before,
+.board__square--checked::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 140%;
+  height: var(--board-cross-stroke);
+  background-color: var(--board-cross-color);
+  transform-origin: center;
+  pointer-events: none;
+  border-radius: 999px;
+  opacity: 0.9;
+}
+
+.board__square--checked::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.board__square--checked::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
 }
 
 .status {
