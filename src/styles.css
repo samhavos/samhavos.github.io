@@ -2,22 +2,23 @@
 
 :root {
   color-scheme: light dark;
+  font-family: "Permanent Marker", "Schoolbell", "Segoe UI", sans-serif;
   --app-background: #fbfcff;
   --app-foreground: #141414;
   --app-muted: rgba(36, 41, 46, 0.7);
-  --panel-background: rgba(255, 255, 255, 0.82);
-  --panel-border: #141414;
+  --panel-background: rgba(255, 255, 255, 0.9);
+  --panel-border: rgba(20, 20, 20, 0.85);
   --panel-shadow: 18px 22px 0 rgba(17, 23, 42, 0.12);
   --control-background: rgba(255, 255, 255, 0.92);
-  --control-border: rgba(20, 20, 20, 0.78);
+  --control-border: rgba(36, 36, 36, 0.8);
   --control-focus: #0f172a;
   --button-bg: #ffffff;
   --button-text: #111111;
   --button-border: rgba(17, 17, 17, 0.95);
   --button-shadow: 6px 6px 0 rgba(17, 17, 17, 0.28);
-  --button-hover-bg: rgba(255, 241, 118, 0.8);
+  --button-hover-bg: rgba(17, 17, 17, 0.12);
   --button-disabled-bg: rgba(156, 163, 175, 0.45);
-  --status-bg: rgba(255, 255, 255, 0.82);
+  --status-bg: rgba(255, 255, 255, 0.85);
   --status-text: #1f2937;
   --status-error-bg: rgba(248, 113, 113, 0.22);
   --status-error-text: #7f1d1d;
@@ -26,18 +27,16 @@
   --fullscreen-toggle-bg: rgba(17, 24, 39, 0.85);
   --fullscreen-toggle-hover: rgba(17, 24, 39, 0.95);
   --fullscreen-toggle-text: #f9fafb;
-  --board-fill: rgba(255, 255, 255, 0.96);
-  --board-frame: rgba(17, 24, 39, 0.1);
+  --board-fill: #ffffff;
   --board-marker: #111111;
   --board-marker-soft: rgba(17, 17, 17, 0.55);
-  --board-highlight: rgba(255, 243, 176, 0.7);
-  --board-lines: rgba(0, 0, 0, 0.85);
-  --board-line-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2);
-  --board-square-shadow: 7px 8px 0 rgba(17, 17, 17, 0.24);
-  --board-square-radius: 18px;
-  --board-container-padding: clamp(0.75rem, 2vw, 1.25rem);
+  --board-lines: rgba(17, 17, 17, 0.92);
+  --board-line-width: clamp(2px, 0.7vw, 5px);
+  --board-ink-fill: rgba(17, 17, 17, 0.14);
+  --board-hover-fill: rgba(17, 17, 17, 0.08);
+  --board-strike-width: clamp(6px, 1.4vw, 14px);
+  --board-container-padding: clamp(0.5rem, 2vw, 1rem);
   --body-gradient: radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.94) 0%, rgba(230, 240, 255, 0.55) 55%, rgba(222, 231, 242, 0.4) 100%);
-  font-family: "Permanent Marker", "Schoolbell", "Comic Sans MS", "Segoe UI", sans-serif;
   background-color: var(--app-background);
   color: var(--app-foreground);
 }
@@ -65,38 +64,37 @@ select {
   --app-background: #05070d;
   --app-foreground: #f4f5ff;
   --app-muted: rgba(226, 232, 240, 0.75);
-  --panel-background: rgba(11, 17, 27, 0.92);
-  --panel-border: rgba(241, 245, 249, 0.85);
+  --panel-background: rgba(12, 20, 34, 0.92);
+  --panel-border: rgba(226, 232, 240, 0.75);
   --panel-shadow: 18px 22px 0 rgba(0, 0, 0, 0.55);
   --control-background: rgba(17, 24, 39, 0.9);
-  --control-border: rgba(226, 232, 240, 0.6);
-  --control-focus: rgba(255, 255, 255, 0.88);
+  --control-border: rgba(226, 232, 240, 0.5);
+  --control-focus: rgba(226, 232, 240, 0.9);
   --button-bg: rgba(17, 24, 39, 0.9);
-  --button-text: #f9fafb;
-  --button-border: rgba(226, 232, 240, 0.85);
+  --button-text: #f1f5f9;
+  --button-border: rgba(226, 232, 240, 0.8);
   --button-shadow: 6px 6px 0 rgba(148, 163, 184, 0.4);
-  --button-hover-bg: rgba(148, 163, 184, 0.4);
+  --button-hover-bg: rgba(148, 163, 184, 0.28);
   --button-disabled-bg: rgba(71, 85, 105, 0.4);
   --status-bg: rgba(15, 23, 42, 0.9);
   --status-text: #e2e8f0;
-  --status-error-bg: rgba(252, 165, 165, 0.28);
+  --status-error-bg: rgba(248, 113, 113, 0.28);
   --status-error-text: #fecaca;
   --status-success-bg: rgba(96, 165, 250, 0.32);
   --status-success-text: #bfdbfe;
   --fullscreen-toggle-bg: rgba(148, 163, 184, 0.85);
   --fullscreen-toggle-hover: rgba(203, 213, 225, 0.9);
   --fullscreen-toggle-text: #0f172a;
-  --board-fill: rgba(12, 18, 29, 0.95);
-  --board-frame: rgba(148, 163, 184, 0.18);
-  --board-marker: #f8fafc;
-  --board-marker-soft: rgba(226, 232, 240, 0.5);
-  --board-highlight: rgba(96, 165, 250, 0.35);
-  --board-lines: rgba(248, 250, 252, 0.9);
-  --board-line-shadow: 1px 1px 0 rgba(59, 130, 246, 0.35);
-  --board-square-shadow: 6px 7px 0 rgba(96, 165, 250, 0.3);
-  --board-container-padding: clamp(0.75rem, 2vw, 1.25rem);
+  --board-fill: rgba(15, 23, 42, 0.95);
+  --board-marker: #e2e8f0;
+  --board-marker-soft: rgba(226, 232, 240, 0.35);
+  --board-lines: rgba(226, 232, 240, 0.85);
+  --board-line-width: clamp(2px, 0.6vw, 5px);
+  --board-ink-fill: rgba(226, 232, 240, 0.18);
+  --board-hover-fill: rgba(148, 163, 184, 0.18);
+  --board-strike-width: clamp(6px, 1.4vw, 16px);
+  --board-container-padding: clamp(0.5rem, 2vw, 1rem);
   --body-gradient: radial-gradient(circle at 20% 20%, rgba(15, 23, 42, 0.92) 0%, rgba(6, 11, 21, 0.98) 65%, rgba(3, 7, 15, 1) 100%);
-  color: var(--app-foreground);
 }
 
 .app {
@@ -110,8 +108,8 @@ select {
   justify-content: space-between;
   background: var(--panel-background);
   border: 3px solid var(--panel-border);
-  border-radius: 28px;
   box-shadow: var(--panel-shadow);
+  border-radius: 20px;
   backdrop-filter: blur(3px);
 }
 
@@ -166,7 +164,7 @@ select {
 .board__select {
   padding: 0.65rem 0.85rem;
   border: 2px solid var(--control-border);
-  border-radius: 18px;
+  border-radius: 16px;
   font-size: 1rem;
   background: var(--control-background);
   color: var(--app-foreground);
@@ -184,7 +182,7 @@ select {
 
 .app__button {
   padding: 0.7rem 1.2rem;
-  border-radius: 22px;
+  border-radius: 20px;
   border: 2px solid var(--button-border);
   background-color: var(--button-bg);
   color: var(--button-text);
@@ -197,7 +195,7 @@ select {
 .app__button:hover,
 .app__button:focus-visible {
   background-color: var(--button-hover-bg);
-  transform: translate(-2px, -2px) rotate(-0.8deg);
+  transform: translate(-2px, -2px) rotate(-0.6deg);
   outline: none;
   box-shadow: 8px 8px 0 var(--panel-border);
 }
@@ -260,23 +258,35 @@ select {
 
 .board__grid-container {
   position: relative;
-  container: board / size;
-  flex: 1;
-  min-height: 0;
+  align-self: center;
+  container-name: board;
+  container-type: size;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: var(--board-container-padding);
-  background: var(--board-fill);
+  flex: 1;
+  width: 100%;
+  min-height: 0;
 }
 
 .board__grid {
   position: relative;
   width: 100cqmin;
+  border-right: solid 3px var(--board-marker);
+  border-bottom: solid 3px var(--board-marker);
+  max-width: 100%;
+  max-height: 100%;
   aspect-ratio: 1 / 1;
+  margin: 0 auto;
   display: grid;
-  gap: clamp(0.45rem, 1.2vw, 0.75rem);
-  background: transparent;
+  gap: 0;
+  background-color: var(--board-fill);
+  overflow: hidden;
+}
+
+.board__grid::before {
+  content: none;
 }
 
 .board__grid[aria-busy="true"] {
@@ -293,7 +303,7 @@ select {
   transform: translate(-50%, -50%);
   display: none;
   pointer-events: none;
-  z-index: 2;
+  z-index: 3;
 }
 
 .board__grid-lines--visible {
@@ -302,65 +312,78 @@ select {
 
 .board__grid-line {
   position: absolute;
-  background-color: var(--board-lines);
-  border-radius: 999px;
-  box-shadow: var(--board-line-shadow);
-  opacity: 0.92;
-  filter: drop-shadow(0 0 2px var(--board-marker-soft));
+  background-color: var(--board-marker);
+  opacity: 0.9;
 }
 
 .board__grid-line--row {
-  height: clamp(6px, 1.6vw, 14px);
+  height: var(--board-strike-width);
   width: 100%;
 }
 
 .board__grid-line--column {
   height: 100%;
-  width: clamp(6px, 1.6vw, 14px);
+  width: var(--board-strike-width);
 }
 
 .board__grid-line--diag-primary,
 .board__grid-line--diag-secondary {
-  height: clamp(6px, 1.6vw, 14px);
+  height: var(--board-strike-width);
   width: 140%;
 }
 
+.board__grid-line--diag-primary {
+  transform-origin: center;
+}
+
+.board__grid-line--diag-secondary {
+  transform-origin: center;
+}
+
 .board__square {
-  background-color: var(--board-fill);
-  border: 3px solid var(--board-marker);
-  border-radius: var(--board-square-radius);
-  min-height: 100px;
+  position: relative;
+  z-index: 2;
+  background: transparent;
+  border: none;
+  border-top: solid 3px var(--board-marker);
+  border-left: solid 3px var(--board-marker);
+  border-radius: 0;
   aspect-ratio: 1 / 1;
-  padding: clamp(0.6rem, 1.6vw, 1rem);
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
-  box-shadow: var(--board-square-shadow);
   color: var(--board-marker);
-  line-height: 1.25;
-  font-size: clamp(0.85rem, 1.5vw, 1.15rem);
+  font-size: clamp(0.85rem, 3cqmin, 2.15rem);
+  transition: background-color 0.18s ease, color 0.18s ease;
+  overflow: hidden;
+}
+
+.board__square:hover:not(.board__square--checked) {
+  background-color: var(--board-hover-fill);
 }
 
 .board__square:focus-visible {
-  outline: 3px solid var(--board-marker);
-  outline-offset: 4px;
+  outline: 2px dashed var(--board-marker);
+  outline-offset: -2px;
 }
 
 .board__square--checked {
-  background: var(--board-highlight);
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 18px,
+    var(--board-ink-fill) 18px 26px
+  );
   color: var(--board-marker);
   text-decoration: line-through;
   text-decoration-color: var(--board-marker);
-  text-decoration-thickness: 4px;
-  box-shadow: 9px 10px 0 var(--board-frame);
+  text-decoration-thickness: 3px;
 }
 
 .status {
   padding: 0.9rem 1.25rem;
-  border-radius: 22px;
+  border-radius: 20px;
   background-color: var(--status-bg);
   color: var(--status-text);
   border: 2px solid var(--panel-border);
