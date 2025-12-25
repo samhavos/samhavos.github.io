@@ -38,6 +38,7 @@
   --board-strike-color: #d62828;
   --board-cross-color: #1d4ed8;
   --board-cross-stroke: clamp(4px, 1.1vw, 12px);
+  --board-cross-mask: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Cpath d=%27M8 10 C20 20 30 30 40 38 C46 44 52 48 58 50%27 fill=%27none%27 stroke=%27white%27 stroke-width=%274.5%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3Cpath d=%27M56 10 C44 20 34 30 24 38 C18 44 14 48 8 50%27 fill=%27none%27 stroke=%27white%27 stroke-width=%274.5%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E");
   --board-container-padding: clamp(0.5rem, 2vw, 1rem);
   --body-gradient: radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.94) 0%, rgba(230, 240, 255, 0.55) 55%, rgba(222, 231, 242, 0.4) 100%);
   background-color: var(--app-background);
@@ -379,27 +380,15 @@ select {
   color: var(--board-marker);
 }
 
-.board__square--checked::before,
-.board__square--checked::after {
+.board__square--checked::before {
   content: "";
   position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 140%;
-  height: var(--board-cross-stroke);
+  inset: 0;
   background-color: var(--board-cross-color);
-  transform-origin: center;
+  opacity: 0.95;
   pointer-events: none;
-  border-radius: 999px;
-  opacity: 0.9;
-}
-
-.board__square--checked::before {
-  transform: translate(-50%, -50%) rotate(45deg);
-}
-
-.board__square--checked::after {
-  transform: translate(-50%, -50%) rotate(-45deg);
+  mask: var(--board-cross-mask) center/contain no-repeat;
+  -webkit-mask: var(--board-cross-mask) center/contain no-repeat;
 }
 
 .status {
