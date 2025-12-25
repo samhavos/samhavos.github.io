@@ -21,6 +21,90 @@ const INITIAL_STATUS: StatusMessage = {
   text: "Enter a GitHub repo to load boards."
 };
 
+function hashSeed(input: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < input.length; i += 1) {
+    h ^= input.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return h >>> 0;
+}
+
+function createRandomGenerator(seedValue: string): () => number {
+  let state = hashSeed(seedValue) || 0x12345678;
+  return () => {
+    state = (state + 0x6d2b79f5) | 0;
+    let t = Math.imul(state ^ (state >>> 15), 1 | state);
+    t ^= t + Math.imul(t ^ (t >>> 7), 61 | t);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function buildCrossMask(seedValue: string): string {
+  const rand = createRandomGenerator(seedValue);
+
+  const jitter = (base: number, range: number) => (base + (rand() - 0.5) * range);
+
+  const p1 = {
+    c1x: jitter(20, 4),
+    c1y: jitter(20, 4),
+    c2x: jitter(32, 16),
+    c2y: jitter(32, 16),
+    ex: jitter(52, 4),
+    ey: jitter(52, 4)
+  };
+
+  const p2 = {
+    c1x: jitter(52, 4),
+    c1y: jitter(20, 4),
+    c2x: jitter(32, 16),
+    c2y: jitter(32, 16),
+    ex: jitter(12, 4),
+    ey: jitter(52, 4)
+  };
+
+  const opaBase = 0.5 + rand() * 0.4;
+
+  const opaStart1 = (opaBase + rand() * 0.1).toFixed(2);
+  const opaEnd1 = (opaBase + rand() * 0.1).toFixed(2);
+  const opaStart2 = (opaBase + rand() * 0.1).toFixed(2);
+  const opaEnd2 = (opaBase + rand() * 0.1).toFixed(2);
+
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>` +
+    `<defs>` +
+    `<linearGradient id='g1' gradientUnits='userSpaceOnUse' x1='8' y1='8' x2='56' y2='56'>` +
+    `<stop offset='0' stop-color='white' stop-opacity='${opaStart1}'/>` +
+    `<stop offset='1' stop-color='white' stop-opacity='${opaEnd1}'/>` +
+    `</linearGradient>` +
+    `<linearGradient id='g2' gradientUnits='userSpaceOnUse' x1='56' y1='8' x2='8' y2='56'>` +
+    `<stop offset='0' stop-color='white' stop-opacity='${opaStart2}'/>` +
+    `<stop offset='1' stop-color='white' stop-opacity='${opaEnd2}'/>` +
+    `</linearGradient>` +
+    `</defs>` +
+    `<path d='M8 10 C ${p1.c1x.toFixed(1)} ${p1.c1y.toFixed(1)} ${p1.c2x.toFixed(1)} ${p1.c2y.toFixed(1)} ${p1.ex.toFixed(1)} ${p1.ey.toFixed(1)}' fill='none' stroke='url(#g1)' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/>` +
+    `<path d='M56 10 C ${p2.c1x.toFixed(1)} ${p2.c1y.toFixed(1)} ${p2.c2x.toFixed(1)} ${p2.c2y.toFixed(1)} ${p2.ex.toFixed(1)} ${p2.ey.toFixed(1)}' fill='none' stroke='url(#g2)' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/>` +
+    `</svg>`;
+
+  const encoded = encodeURIComponent(svg)
+    .replace(/'/g, "%27")
+    .replace(/\(/g, "%28")
+    .replace(/\)/g, "%29");
+
+  return `url("data:image/svg+xml,${encoded}")`;
+}
+
+const crossMaskCache = new Map<string, string>();
+
+function getCrossMask(seedValue: string): string {
+  const cached = crossMaskCache.get(seedValue);
+  if (cached) {
+    return cached;
+  }
+  const mask = buildCrossMask(seedValue);
+  crossMaskCache.set(seedValue, mask);
+  return mask;
+}
+
 /**
  * Wire up the DOM, restore stored preferences, and start the application.
  * Accepts optional query-derived hints for repo, board, and token.
@@ -425,12 +509,17 @@ export function initializeApp(hints: QueryHints = {}): void {
 
     elements.boardInfo.textContent = infoParts.join(" | ");
 
+    const maskSeedBase = board.summary.path || board.summary.name;
+
     doc.items.forEach((item, index) => {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "board__square";
       button.dataset.index = index.toString();
       button.textContent = item.text || "\u00A0";
+
+      const maskSeed = `${maskSeedBase}:${index}`;
+      button.style.setProperty("--board-cross-mask", getCrossMask(maskSeed));
 
       if (item.checkedAt) {
         button.classList.add("board__square--checked");
