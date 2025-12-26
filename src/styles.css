@@ -39,6 +39,7 @@
   --board-cross-color: #1d4ed8;
   --board-cross-stroke: clamp(4px, 1.1vw, 12px);
   --board-strike-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 64' preserveAspectRatio='none'%3E%3Cpath d='M0 32 C64 30 128 34 256 32' fill='none' stroke='%23ffffff' stroke-width='160' stroke-linecap='round'/%3E%3C/svg%3E");
+  --board-grid-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 64' preserveAspectRatio='none'%3E%3Cpath d='M0 32 C64 30 128 34 256 32' fill='none' stroke='%23121212' stroke-width='96' stroke-linecap='round'/%3E%3C/svg%3E");
   --board-cross-mask: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Cpath d=%27M8 10 C20 20 30 30 40 38 C46 44 52 48 58 50%27 fill=%27none%27 stroke=%27white%27 stroke-width=%274.5%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3Cpath d=%27M56 10 C44 20 34 30 24 38 C18 44 14 48 8 50%27 fill=%27none%27 stroke=%27white%27 stroke-width=%274.5%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E");
   --board-container-padding: clamp(0.5rem, 2vw, 1rem);
   --body-gradient: radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.94) 0%, rgba(230, 240, 255, 0.55) 55%, rgba(222, 231, 242, 0.4) 100%);
@@ -103,6 +104,7 @@ select {
   --board-cross-stroke: clamp(4px, 1vw, 12px);
   --board-container-padding: clamp(0.5rem, 2vw, 1rem);
   --body-gradient: radial-gradient(circle at 20% 20%, rgba(15, 23, 42, 0.92) 0%, rgba(6, 11, 21, 0.98) 65%, rgba(3, 7, 15, 1) 100%);
+  --board-grid-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 64' preserveAspectRatio='none'%3E%3Cpath d='M0 32 C64 30 128 34 256 32' fill='none' stroke='%23e5e7eb' stroke-width='96' stroke-linecap='round'/%3E%3C/svg%3E");
 }
 
 .app {
@@ -281,8 +283,6 @@ select {
 .board__grid {
   position: relative;
   width: 100cqmin;
-  border-right: solid 3px var(--board-marker);
-  border-bottom: solid 3px var(--board-marker);
   max-width: 100%;
   max-height: 100%;
   aspect-ratio: 1 / 1;
@@ -312,6 +312,37 @@ select {
   display: none;
   pointer-events: none;
   z-index: 3;
+}
+
+.board__grid-ink {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.board__grid-ink-line {
+  position: absolute;
+  background-image: var(--board-grid-texture);
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.96;
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.2));
+}
+
+.board__grid-ink-line--horizontal {
+  left: 0;
+  width: 100%;
+  height: var(--board-line-width);
+  transform: translateY(-50%);
+}
+
+.board__grid-ink-line--vertical {
+  top: 0;
+  height: 100%;
+  width: var(--board-line-width);
+  transform: translateX(-50%);
 }
 
 .board__grid-lines--visible {
@@ -356,8 +387,6 @@ select {
   z-index: 2;
   background: transparent;
   border: none;
-  border-top: solid 3px var(--board-marker);
-  border-left: solid 3px var(--board-marker);
   border-radius: 0;
   aspect-ratio: 1 / 1;
   display: flex;

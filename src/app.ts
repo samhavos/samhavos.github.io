@@ -17,6 +17,7 @@ import type {
 } from "./types";
 
 type LineOrientation = "row" | "column" | "diag-primary" | "diag-secondary";
+type GridOrientation = "horizontal" | "vertical";
 
 const INITIAL_STATUS: StatusMessage = {
   level: "info",
@@ -225,6 +226,115 @@ function getStrikeTexture(seedValue: string, orientation: LineOrientation): stri
   }
   const texture = buildStrikeTexture(seedValue, orientation);
   strikeTextureCache.set(key, texture);
+  return texture;
+}
+
+function buildGridTexture(seedValue: string, orientation: GridOrientation): string {
+  const rand = createRandomGenerator(seedValue);
+  const jitter = (base: number, spread: number) => base + (rand() - 0.5) * spread;
+
+  const isVertical = orientation === "vertical";
+  const viewBox = isVertical ? "0 0 64 256" : "0 0 256 64";
+  const segments = 24;
+
+  const buildOffsets = (center: number, driftScale: number, wobbleAmp: number, microScale: number) => {
+    const samples: number[] = [];
+    for (let i = 0; i <= segments; i += 1) {
+      const progress = i / segments;
+      const drift = (progress - 0.5) * driftScale;
+      const wobble = Math.sin((progress * 6) + rand() * 0.4) * wobbleAmp;
+      const micro = Math.sin((progress * 18) + rand() * 0.6) * microScale;
+      samples.push(jitter(center + drift + wobble + micro, wobbleAmp * 0.35));
+    }
+    return samples;
+  };
+
+  const composePath = (offsets: number[], axis: GridOrientation) => {
+    const step = 256 / segments;
+    let d = axis === "vertical" ? `M${offsets[0].toFixed(2)} 0` : `M0 ${offsets[0].toFixed(2)}`;
+    for (let i = 1; i <= segments; i += 1) {
+      const prevOffset = offsets[i - 1];
+      const targetOffset = offsets[i];
+      const prevPrimary = step * (i - 1);
+      const targetPrimary = step * i;
+      const delta = targetOffset - prevOffset;
+      const c1Primary = prevPrimary + step / 3 + jitter(0, step * 0.14);
+      const c2Primary = prevPrimary + (step * 2) / 3 + jitter(0, step * 0.14);
+      const c1Secondary = prevOffset + delta * 0.35 + jitter(0, Math.abs(delta) * 0.45 + 5);
+      const c2Secondary = prevOffset + delta * 0.7 + jitter(0, Math.abs(delta) * 0.45 + 5);
+
+      if (axis === "vertical") {
+        const c1x = c1Secondary;
+        const c1y = c1Primary;
+        const c2x = c2Secondary;
+        const c2y = c2Primary;
+        d += ` C ${c1x.toFixed(2)} ${c1y.toFixed(2)} ${c2x.toFixed(2)} ${c2y.toFixed(2)} ${targetOffset.toFixed(2)} ${targetPrimary.toFixed(2)}`;
+      } else {
+        const c1x = c1Primary;
+        const c1y = c1Secondary;
+        const c2x = c2Primary;
+        const c2y = c2Secondary;
+        d += ` C ${c1x.toFixed(2)} ${c1y.toFixed(2)} ${c2x.toFixed(2)} ${c2y.toFixed(2)} ${targetPrimary.toFixed(2)} ${targetOffset.toFixed(2)}`;
+      }
+    }
+    return d;
+  };
+
+  const center = 32;
+  const mainOffsets = buildOffsets(center, isVertical ? 8 : 12, isVertical ? 10 : 12, isVertical ? 3.5 : 4);
+  const accentOffsets = buildOffsets(center + jitter(0, 2.5), isVertical ? 6 : 8, isVertical ? 7 : 9, isVertical ? 2.4 : 3.2);
+
+  const mainPath = composePath(mainOffsets, orientation);
+  const accentPath = composePath(accentOffsets, orientation);
+
+  const gradient = isVertical
+    ? { x1: 32, y1: 0, x2: 32, y2: 256 }
+    : { x1: 0, y1: 32, x2: 256, y2: 32 };
+
+  const mainStrokeWidth = isVertical ? 40 : 40;
+  const accentStrokeWidth = mainStrokeWidth * 0.52;
+
+  const baseTone = rand() * 0.08;
+  const startColor = `rgba(${18 + baseTone * 120}, ${18 + baseTone * 120}, ${18 + baseTone * 120}, ${0.92 + rand() * 0.04})`;
+  const midColor = `rgba(${10 + baseTone * 90}, ${10 + baseTone * 90}, ${10 + baseTone * 90}, ${0.82 + rand() * 0.06})`;
+  const endColor = `rgba(${4 + baseTone * 60}, ${4 + baseTone * 60}, ${4 + baseTone * 60}, ${0.95})`;
+  const accentStartColor = `rgba(${36 + baseTone * 80}, ${36 + baseTone * 80}, ${36 + baseTone * 80}, ${0.65 + rand() * 0.08})`;
+  const accentEndColor = `rgba(${12 + baseTone * 70}, ${12 + baseTone * 70}, ${12 + baseTone * 70}, ${0.35 + rand() * 0.08})`;
+
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='${viewBox}' preserveAspectRatio='none'>` +
+    `<defs>` +
+    `<linearGradient id='mainGrad' gradientUnits='userSpaceOnUse' x1='${gradient.x1}' y1='${gradient.y1}' x2='${gradient.x2}' y2='${gradient.y2}'>` +
+    `<stop offset='0' stop-color='${startColor}'/>` +
+    `<stop offset='0.42' stop-color='${midColor}'/>` +
+    `<stop offset='1' stop-color='${endColor}'/>` +
+    `</linearGradient>` +
+    `<linearGradient id='accentGrad' gradientUnits='userSpaceOnUse' x1='${gradient.x1}' y1='${gradient.y1}' x2='${gradient.x2}' y2='${gradient.y2}'>` +
+    `<stop offset='0' stop-color='${accentStartColor}'/>` +
+    `<stop offset='1' stop-color='${accentEndColor}'/>` +
+    `</linearGradient>` +
+    `</defs>` +
+    `<path d='${mainPath}' fill='none' stroke='url(#mainGrad)' stroke-width='${mainStrokeWidth}' stroke-linecap='round' stroke-linejoin='round'/>` +
+    `<path d='${accentPath}' fill='none' stroke='url(#accentGrad)' stroke-width='${accentStrokeWidth}' stroke-linecap='round' stroke-linejoin='round'/>` +
+    `</svg>`;
+
+  const encoded = encodeURIComponent(svg)
+    .replace(/'/g, "%27")
+    .replace(/\(/g, "%28")
+    .replace(/\)/g, "%29");
+
+  return `url("data:image/svg+xml,${encoded}")`;
+}
+
+const gridTextureCache = new Map<string, string>();
+
+function getGridTexture(seedValue: string, orientation: GridOrientation): string {
+  const key = `${orientation}|${seedValue}`;
+  const cached = gridTextureCache.get(key);
+  if (cached) {
+    return cached;
+  }
+  const texture = buildGridTexture(seedValue, orientation);
+  gridTextureCache.set(key, texture);
   return texture;
 }
 
@@ -634,6 +744,12 @@ export function initializeApp(hints: QueryHints = {}): void {
 
     const maskSeedBase = board.summary.path || board.summary.name;
 
+    const inkLayer = document.createElement("div");
+    inkLayer.className = "board__grid-ink";
+    inkLayer.setAttribute("aria-hidden", "true");
+    elements.boardGrid.appendChild(inkLayer);
+    renderGridInk(inkLayer, doc.size, maskSeedBase);
+
     doc.items.forEach((item, index) => {
       const button = document.createElement("button");
       button.type = "button";
@@ -656,6 +772,73 @@ export function initializeApp(hints: QueryHints = {}): void {
     });
 
     renderBingoLines(bingos, doc.size, maskSeedBase);
+  }
+
+  function renderGridInk(layer: HTMLDivElement, size: number, boardSeed: string): void {
+    layer.innerHTML = "";
+    if (!Number.isFinite(size) || size <= 0) {
+      return;
+    }
+
+    const baseThickness = 6;
+
+    for (let row = 0; row <= size; row += 1) {
+      const lineSeed = `${boardSeed}:grid-h:${row}`;
+      const line = document.createElement("div");
+      line.className = "board__grid-ink-line board__grid-ink-line--horizontal";
+      line.style.setProperty("--board-grid-texture", getGridTexture(lineSeed, "horizontal"));
+
+      const thickness = row === 0 || row === size ? baseThickness + 1.2 : baseThickness;
+      line.style.height = `${thickness}px`;
+      line.style.left = "0";
+      line.style.right = "";
+
+      if (row === 0) {
+        line.style.top = "0";
+        line.style.bottom = "";
+        line.style.transform = "none";
+      } else if (row === size) {
+        line.style.top = "";
+        line.style.bottom = "0";
+        line.style.transform = "none";
+      } else {
+        const position = (row / size) * 100;
+        line.style.top = `${position}%`;
+        line.style.bottom = "";
+        line.style.transform = "translateY(-50%)";
+      }
+
+      layer.appendChild(line);
+    }
+
+    for (let col = 0; col <= size; col += 1) {
+      const lineSeed = `${boardSeed}:grid-v:${col}`;
+      const line = document.createElement("div");
+      line.className = "board__grid-ink-line board__grid-ink-line--vertical";
+      line.style.setProperty("--board-grid-texture", getGridTexture(lineSeed, "vertical"));
+
+      const thickness = col === 0 || col === size ? baseThickness + 1.2 : baseThickness;
+      line.style.width = `${thickness}px`;
+      line.style.top = "0";
+      line.style.bottom = "";
+
+      if (col === 0) {
+        line.style.left = "0";
+        line.style.right = "";
+        line.style.transform = "none";
+      } else if (col === size) {
+        line.style.left = "";
+        line.style.right = "0";
+        line.style.transform = "none";
+      } else {
+        const position = (col / size) * 100;
+        line.style.left = `${position}%`;
+        line.style.right = "";
+        line.style.transform = "translateX(-50%)";
+      }
+
+      layer.appendChild(line);
+    }
   }
 
   function renderBingoLines(lines: number[][], size: number, boardSeed: string): void {
