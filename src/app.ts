@@ -16,6 +16,8 @@ import type {
   StatusMessage
 } from "./types";
 
+type LineOrientation = "row" | "column" | "diag-primary" | "diag-secondary";
+
 const INITIAL_STATUS: StatusMessage = {
   level: "info",
   text: "Enter a GitHub repo to load boards."
@@ -103,6 +105,127 @@ function getCrossMask(seedValue: string): string {
   const mask = buildCrossMask(seedValue);
   crossMaskCache.set(seedValue, mask);
   return mask;
+}
+
+function buildStrikeTexture(seedValue: string, orientation: LineOrientation): string {
+  const rand = createRandomGenerator(seedValue);
+  const jitter = (base: number, spread: number) => base + (rand() - 0.5) * spread;
+
+  const isVertical = orientation === "column";
+  const isDiagonal = orientation === "diag-primary" || orientation === "diag-secondary";
+  const viewBox = isVertical ? "0 0 64 256" : "0 0 256 64";
+  const segments = 20;
+
+  const buildOffsets = (center: number, driftScale: number, wobbleAmp: number) => {
+    const samples: number[] = [];
+    for (let i = 0; i <= segments; i += 1) {
+      const progress = i / segments;
+      const drift = (progress - 0.5) * driftScale;
+      const wobble = Math.sin((progress + rand() * 0.15) * Math.PI * 4 * (isDiagonal ? 1.3 : 1)) * wobbleAmp;
+      const micro = Math.sin((progress * 12) + rand() * 0.6) * (wobbleAmp * 0.45);
+      samples.push(jitter(center + drift + wobble + micro, wobbleAmp * 0.4));
+    }
+    return samples;
+  };
+
+  const composePath = (offsets: number[], axis: "horizontal" | "vertical") => {
+    const step = 256 / segments;
+    let d = axis === "vertical" ? `M${offsets[0].toFixed(2)} 0` : `M0 ${offsets[0].toFixed(2)}`;
+    for (let i = 1; i <= segments; i += 1) {
+      const prevOffset = offsets[i - 1];
+      const targetOffset = offsets[i];
+      const prevPrimary = step * (i - 1);
+      const targetPrimary = step * i;
+      const delta = targetOffset - prevOffset;
+      const c1Primary = prevPrimary + step / 3 + jitter(0, step * 0.22);
+      const c2Primary = prevPrimary + (step * 2) / 3 + jitter(0, step * 0.22);
+      const c1Secondary = prevOffset + delta * 0.35 + jitter(0, Math.abs(delta) * 0.6 + 10);
+      const c2Secondary = prevOffset + delta * 0.7 + jitter(0, Math.abs(delta) * 0.6 + 10);
+
+      if (axis === "vertical") {
+        const c1x = c1Secondary;
+        const c1y = c1Primary;
+        const c2x = c2Secondary;
+        const c2y = c2Primary;
+        d += ` C ${c1x.toFixed(2)} ${c1y.toFixed(2)} ${c2x.toFixed(2)} ${c2y.toFixed(2)} ${targetOffset.toFixed(2)} ${targetPrimary.toFixed(2)}`;
+      } else {
+        const c1x = c1Primary;
+        const c1y = c1Secondary;
+        const c2x = c2Primary;
+        const c2y = c2Secondary;
+        d += ` C ${c1x.toFixed(2)} ${c1y.toFixed(2)} ${c2x.toFixed(2)} ${c2y.toFixed(2)} ${targetPrimary.toFixed(2)} ${targetOffset.toFixed(2)}`;
+      }
+    }
+    return d;
+  };
+
+  const center = 32;
+  const horizontalDrift = isDiagonal ? 16 : 10;
+  const horizontalAmpMain = isDiagonal ? 22 : 18;
+  const horizontalAmpAccent = horizontalAmpMain * 0.6;
+  const verticalDrift = isDiagonal ? 14 : 10;
+  const verticalAmpMain = isDiagonal ? 20 : 16;
+  const verticalAmpAccent = verticalAmpMain * 0.6;
+
+  const mainOffsets = isVertical
+    ? buildOffsets(center, verticalDrift, verticalAmpMain)
+    : buildOffsets(center, horizontalDrift, horizontalAmpMain);
+
+  const accentOffsets = isVertical
+    ? buildOffsets(center + jitter(0, 3), verticalDrift * 0.75, verticalAmpAccent)
+    : buildOffsets(center + jitter(0, 3), horizontalDrift * 0.75, horizontalAmpAccent);
+
+  const mainPath = composePath(mainOffsets, isVertical ? "vertical" : "horizontal");
+  const accentPath = composePath(accentOffsets, isVertical ? "vertical" : "horizontal");
+
+  const gradient = isVertical
+    ? { x1: 32, y1: 0, x2: 32, y2: 256 }
+    : { x1: 0, y1: 32, x2: 256, y2: 32 };
+
+  const mainStrokeWidth = isDiagonal ?  50 : 50;
+  const accentStrokeWidth = mainStrokeWidth * 0.58;
+
+  const startOpacity = (0.86 + rand() * 0.06).toFixed(2);
+  const midOpacity = (0.54 + rand() * 0.12).toFixed(2);
+  const endOpacity = (0.72 + rand() * 0.08).toFixed(2);
+  const accentStartOpacity = (0.68 + rand() * 0.08).toFixed(2);
+  const accentEndOpacity = (0.32 + rand() * 0.12).toFixed(2);
+
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='${viewBox}' preserveAspectRatio='none'>` +
+    `<defs>` +
+    `<linearGradient id='strokeGrad' gradientUnits='userSpaceOnUse' x1='${gradient.x1}' y1='${gradient.y1}' x2='${gradient.x2}' y2='${gradient.y2}'>` +
+    `<stop offset='0' stop-color='${isDiagonal ? "#fcb1a6" : "#fb948f"}' stop-opacity='${startOpacity}'/>` +
+    `<stop offset='0.45' stop-color='${isDiagonal ? "#f77f78" : "#f96c68"}' stop-opacity='${midOpacity}'/>` +
+    `<stop offset='1' stop-color='${isDiagonal ? "#eb3c3c" : "#e52a2a"}' stop-opacity='${endOpacity}'/>` +
+    `</linearGradient>` +
+    `<linearGradient id='strokeGradAccent' gradientUnits='userSpaceOnUse' x1='${gradient.x1}' y1='${gradient.y1}' x2='${gradient.x2}' y2='${gradient.y2}'>` +
+    `<stop offset='0' stop-color='${isDiagonal ? "#ffd2cb" : "#ffc3bf"}' stop-opacity='${accentStartOpacity}'/>` +
+    `<stop offset='1' stop-color='${isDiagonal ? "#f76a6a" : "#f95858"}' stop-opacity='${accentEndOpacity}'/>` +
+    `</linearGradient>` +
+    `</defs>` +
+    `<path d='${mainPath}' fill='none' stroke='url(#strokeGrad)' stroke-width='${mainStrokeWidth}' stroke-linecap='round' stroke-linejoin='round'/>` +
+    `<path d='${accentPath}' fill='none' stroke='url(#strokeGradAccent)' stroke-width='${accentStrokeWidth}' stroke-linecap='round' stroke-linejoin='round'/>` +
+    `</svg>`;
+
+  const encoded = encodeURIComponent(svg)
+    .replace(/'/g, "%27")
+    .replace(/\(/g, "%28")
+    .replace(/\)/g, "%29");
+
+  return `url("data:image/svg+xml,${encoded}")`;
+}
+
+const strikeTextureCache = new Map<string, string>();
+
+function getStrikeTexture(seedValue: string, orientation: LineOrientation): string {
+  const key = `${orientation}|${seedValue}`;
+  const cached = strikeTextureCache.get(key);
+  if (cached) {
+    return cached;
+  }
+  const texture = buildStrikeTexture(seedValue, orientation);
+  strikeTextureCache.set(key, texture);
+  return texture;
 }
 
 /**
@@ -532,10 +655,10 @@ export function initializeApp(hints: QueryHints = {}): void {
       elements.boardGrid.appendChild(button);
     });
 
-    renderBingoLines(bingos, doc.size);
+    renderBingoLines(bingos, doc.size, maskSeedBase);
   }
 
-  function renderBingoLines(lines: number[][], size: number): void {
+  function renderBingoLines(lines: number[][], size: number, boardSeed: string): void {
     if (!elements.boardLines) {
       return;
     }
@@ -551,6 +674,8 @@ export function initializeApp(hints: QueryHints = {}): void {
       const line = document.createElement("div");
       const orientation = determineLineOrientation(lineIndices, size);
       line.className = `board__grid-line board__grid-line--${orientation}`;
+      const lineSeed = `${boardSeed}:${orientation}:${lineIndices.join("-")}`;
+      line.style.setProperty("--board-strike-texture", getStrikeTexture(lineSeed, orientation));
 
       switch (orientation) {
         case "row": {
@@ -584,7 +709,7 @@ export function initializeApp(hints: QueryHints = {}): void {
     }
   }
 
-  function determineLineOrientation(lineIndices: number[], size: number): "row" | "column" | "diag-primary" | "diag-secondary" {
+  function determineLineOrientation(lineIndices: number[], size: number): LineOrientation {
     if (lineIndices.length < 2 || size <= 1) {
       return "row";
     }

@@ -38,6 +38,7 @@
   --board-strike-color: #d62828;
   --board-cross-color: #1d4ed8;
   --board-cross-stroke: clamp(4px, 1.1vw, 12px);
+  --board-strike-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 64' preserveAspectRatio='none'%3E%3Cpath d='M0 32 C64 30 128 34 256 32' fill='none' stroke='%23ffffff' stroke-width='160' stroke-linecap='round'/%3E%3C/svg%3E");
   --board-cross-mask: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Cpath d=%27M8 10 C20 20 30 30 40 38 C46 44 52 48 58 50%27 fill=%27none%27 stroke=%27white%27 stroke-width=%274.5%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3Cpath d=%27M56 10 C44 20 34 30 24 38 C18 44 14 48 8 50%27 fill=%27none%27 stroke=%27white%27 stroke-width=%274.5%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E");
   --board-container-padding: clamp(0.5rem, 2vw, 1rem);
   --body-gradient: radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.94) 0%, rgba(230, 240, 255, 0.55) 55%, rgba(222, 231, 242, 0.4) 100%);
@@ -319,8 +320,11 @@ select {
 
 .board__grid-line {
   position: absolute;
-  background-color: var(--board-strike-color);
-  opacity: 0.9;
+  background-image: var(--board-strike-texture);
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 1;
 }
 
 .board__grid-line--row {
