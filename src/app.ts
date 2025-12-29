@@ -19,6 +19,19 @@ import type {
 type LineOrientation = "row" | "column" | "diag-primary" | "diag-secondary";
 type GridOrientation = "horizontal" | "vertical";
 
+type SquareFontSpec = {
+  name: string;
+  scale: number;
+  lineHeight?: number;
+};
+
+const AVAILABLE_SQUARE_FONTS: SquareFontSpec[] = [
+  { name: "Bristol", scale: 1.15, lineHeight: 1.1 },
+  { name: "Janitor", scale: 1 },
+  { name: "Brown Bag Lunch", scale: 1.8, lineHeight: 0.8 },
+  { name: "Sortelo", scale: 1.5 }
+];
+
 const INITIAL_STATUS: StatusMessage = {
   level: "info",
   text: "Enter a GitHub repo to load boards."
@@ -106,6 +119,12 @@ function getCrossMask(seedValue: string): string {
   const mask = buildCrossMask(seedValue);
   crossMaskCache.set(seedValue, mask);
   return mask;
+}
+
+function getSquareFont(seedBase: string, index: number): SquareFontSpec {
+  const hash = hashSeed(`${seedBase}:font:${index}`);
+  const fontIndex = Math.abs(hash) % AVAILABLE_SQUARE_FONTS.length;
+  return AVAILABLE_SQUARE_FONTS[fontIndex] ?? AVAILABLE_SQUARE_FONTS[0];
 }
 
 function buildStrikeTexture(seedValue: string, orientation: LineOrientation): string {
@@ -774,6 +793,15 @@ export function initializeApp(hints: QueryHints = {}): void {
 
       const maskSeed = `${maskSeedBase}:${index}`;
       button.style.setProperty("--board-cross-mask", getCrossMask(maskSeed));
+
+      const squareFont = getSquareFont(maskSeedBase, index);
+      button.style.setProperty("--board-square-font", `'${squareFont.name}', var(--board-square-fallback-font-stack)`);
+      button.style.setProperty("--board-square-font-scale", squareFont.scale.toString());
+      if (typeof squareFont.lineHeight === "number") {
+        button.style.setProperty("--board-square-line-height", squareFont.lineHeight.toString());
+      } else {
+        button.style.removeProperty("--board-square-line-height");
+      }
 
       if (item.checkedAt) {
         button.classList.add("board__square--checked");

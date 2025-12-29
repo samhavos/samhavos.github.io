@@ -1,12 +1,43 @@
 @import url("https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Schoolbell&display=swap");
 
+@font-face {
+  font-family: "Bristol";
+  src: url("./assets/fonts/Bristol.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Janitor";
+  src: url("./assets/fonts/Janitor.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Brown Bag Lunch";
+  src: url("./assets/fonts/BrownBagLunch.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Sortelo";
+  src: url("./assets/fonts/Sortelo Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   color-scheme: light dark;
   font-family: "Permanent Marker", "Schoolbell", "Segoe UI", sans-serif;
   --app-background: #fbfcff;
   --app-foreground: #141414;
   --app-muted: rgba(36, 41, 46, 0.7);
-  --panel-background: rgba(255, 255, 255, 0.9);
   --panel-border: rgba(20, 20, 20, 0.85);
   --panel-shadow: 18px 22px 0 rgba(17, 23, 42, 0.12);
   --control-background: rgba(255, 255, 255, 0.92);
@@ -42,6 +73,11 @@
   --board-strike-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 64' preserveAspectRatio='none'%3E%3Cpath d='M0 32 C64 30 128 34 256 32' fill='none' stroke='%23ffffff' stroke-width='160' stroke-linecap='round'/%3E%3C/svg%3E");
   --board-grid-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 64' preserveAspectRatio='none'%3E%3Cpath d='M0 32 C64 30 128 34 256 32' fill='none' stroke='%23121212' stroke-width='96' stroke-linecap='round'/%3E%3C/svg%3E");
   --board-cross-mask: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Cpath d=%27M8 10 C20 20 30 30 40 38 C46 44 52 48 58 50%27 fill=%27none%27 stroke=%27white%27 stroke-width=%274.5%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3Cpath d=%27M56 10 C44 20 34 30 24 38 C18 44 14 48 8 50%27 fill=%27none%27 stroke=%27white%27 stroke-width=%274.5%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E");
+  --board-square-fallback-font-stack: "Permanent Marker", "Schoolbell", "Segoe UI", sans-serif;
+  --board-square-font: var(--board-square-fallback-font-stack);
+  --board-square-font-size: clamp(0.85rem, 3cqmin, 2.15rem);
+  --board-square-font-scale: 1;
+  --board-square-line-height: normal;
   --board-container-padding: clamp(0.5rem, 2vw, 1rem);
   --body-gradient: radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.94) 0%, rgba(230, 240, 255, 0.55) 55%, rgba(222, 231, 242, 0.4) 100%);
   background-color: var(--app-background);
@@ -71,7 +107,6 @@ select {
   --app-background: #05070d;
   --app-foreground: #f4f5ff;
   --app-muted: rgba(226, 232, 240, 0.75);
-  --panel-background: rgba(12, 20, 34, 0.92);
   --panel-border: rgba(226, 232, 240, 0.75);
   --panel-shadow: 18px 22px 0 rgba(0, 0, 0, 0.55);
   --control-background: rgba(17, 24, 39, 0.9);
@@ -114,11 +149,9 @@ select {
   flex-direction: column;
   gap: 1.8rem;
   padding: clamp(1.5rem, 3vw, 2.5rem);
-  max-width: 960px;
   margin: 0 auto;
   height: 100dvh;
   justify-content: space-between;
-  background: var(--panel-background);
   border-radius: 20px;
   backdrop-filter: blur(3px);
 }
@@ -428,9 +461,12 @@ select {
   text-align: center;
   cursor: pointer;
   color: var(--board-marker);
-  font-size: clamp(0.85rem, 3cqmin, 2.15rem);
+  font-size: calc(var(--board-square-font-size) * var(--board-square-font-scale));
+  font-family: var(--board-square-font);
+  line-height: var(--board-square-line-height);
   transition: background-color 0.18s ease, color 0.18s ease;
   overflow: hidden;
+  text-wrap: balance;
 }
 
 .board__square:hover:not(.board__square--checked) {
