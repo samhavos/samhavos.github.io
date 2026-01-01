@@ -1011,7 +1011,7 @@ export function initializeApp(hints: QueryHints = {}): void {
     setStatus({ level: "info", text: "Saving board..." });
 
     const payload = {
-      message: buildCommitMessage(squareLabel, index, checked),
+      message: buildCommitMessage(squareLabel, index, checked, summary.name),
       content: encodeBase64(JSON.stringify(updatedDoc, null, 2)),
       sha: previousSha,
       branch: state.defaultBranch ?? undefined

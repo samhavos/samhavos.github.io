@@ -78,11 +78,16 @@ export function computeBingoLines(items: BoardItem[], size: number): number[][] 
 }
 
 /**
- * Compose a human-readable commit message describing a tile toggle.
+ * Compose a human-readable commit message describing a tile toggle and its board file.
  */
-export function buildCommitMessage(squareLabel: string, index: number, checked: boolean): string {
+export function buildCommitMessage(
+  squareLabel: string,
+  index: number,
+  checked: boolean,
+  boardFileName: string
+): string {
   const action = checked ? "Check" : "Uncheck";
-  return `${action} square ${index + 1}: ${squareLabel}`;
+  return `${boardFileName}: ${action} square ${index + 1} (${squareLabel})`;
 }
 
 function normalizeItem(item: BoardItem): BoardItem {
