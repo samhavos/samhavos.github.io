@@ -1035,6 +1035,14 @@ export function initializeApp(hints: QueryHints = {}): void {
       renderBoard(state.currentBoard);
       setStatus({ level: "success", text: "Board saved." });
     } catch (error) {
+      if (error instanceof GithubError && error.status === 403) {
+        setStatus({
+          level: "error",
+          text: "Write blocked: use a fine-grained GitHub access token with read and write permissions for this repository."
+        });
+        return;
+      }
+
       if (error instanceof GithubError && error.status === 409) {
         setStatus({ level: "error", text: "Content conflict detected. Reloading board." });
         await loadBoard(summary);
