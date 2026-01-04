@@ -686,15 +686,43 @@ export function initializeApp(hints: QueryHints = {}): void {
   }
 
   function resolveBoardHint(hint: string, boards: BoardSummary[]): BoardSummary | undefined {
-    const normalized = hint.startsWith("boards/") ? hint : `boards/${hint}`;
-    const filename = normalized.split("/").pop();
+    const trimmed = hint.trim();
+    if (!trimmed) {
+      return undefined;
+    }
 
-    return (
-      boards.find((board) => board.path === normalized) ??
-      boards.find((board) => board.path === hint) ??
-      boards.find((board) => board.name === hint) ??
-      (filename ? boards.find((board) => board.name === filename) : undefined)
-    );
+    const ensureJson = (value: string): string => (value.toLowerCase().endsWith(".json") ? value : `${value}.json`);
+    const ensureBoardsPrefix = (value: string): string => (value.startsWith("boards/") ? value : `boards/${value}`);
+
+    const bare = trimmed.startsWith("boards/") ? trimmed.slice("boards/".length) : trimmed;
+    const bareWithJson = ensureJson(bare);
+
+    const pathCandidates = [
+      trimmed,
+      ensureBoardsPrefix(trimmed),
+      ensureBoardsPrefix(ensureJson(trimmed)),
+      ensureBoardsPrefix(bareWithJson)
+    ];
+
+    for (const candidate of pathCandidates) {
+      const match = boards.find((board) => board.path === candidate);
+      if (match) {
+        return match;
+      }
+    }
+
+    const nameCandidates = [bare, bareWithJson];
+
+    for (const candidate of nameCandidates) {
+      const match =
+        boards.find((board) => board.name === candidate) ??
+        boards.find((board) => formatBoardLabel(board.name) === candidate);
+      if (match) {
+        return match;
+      }
+    }
+
+    return undefined;
   }
 
   async function loadBoard(summary: BoardSummary): Promise<void> {
