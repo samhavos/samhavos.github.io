@@ -21,11 +21,22 @@ export function normalizeBoardDocument(doc: BoardDocument): BoardDocument & { si
     items.push({ text: "" });
   }
 
-  return {
-    ...doc,
+  const normalized: BoardDocument & { size: number } = {
     size: inferredSize,
     items
   };
+
+  for (const key of Object.keys(doc)) {
+    if (!Object.hasOwn(doc, key)) {
+      continue;
+    }
+    if (key === "items" || key === "size" || key === "board") {
+      continue;
+    }
+    normalized[key] = doc[key];
+  }
+
+  return normalized;
 }
 
 /**

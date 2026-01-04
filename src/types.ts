@@ -16,7 +16,6 @@ export type BoardItem = {
 };
 
 export type BoardDocument = {
-  board?: string;
   createdAt?: string;
   updatedAt?: string;
   size?: number;

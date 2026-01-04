@@ -37,6 +37,10 @@ const INITIAL_STATUS: StatusMessage = {
   text: "Enter a GitHub repo to load boards."
 };
 
+function formatBoardLabel(fileName: string): string {
+  return fileName.toLowerCase().endsWith(".json") ? fileName.slice(0, -5) : fileName;
+}
+
 function hashSeed(input: string): number {
   let h = 0x811c9dc5;
   for (let i = 0; i < input.length; i += 1) {
@@ -739,7 +743,7 @@ export function initializeApp(hints: QueryHints = {}): void {
     for (const board of state.boards) {
       const option = document.createElement("option");
       option.value = board.path;
-      option.textContent = board.name;
+      option.textContent = formatBoardLabel(board.name);
       elements.boardSelect.appendChild(option);
     }
   }
@@ -760,12 +764,6 @@ export function initializeApp(hints: QueryHints = {}): void {
 
     const bingos = computeBingoLines(doc.items, doc.size);
     const infoParts: string[] = [];
-
-    if (doc.board) {
-      infoParts.push(doc.board);
-    } else {
-      infoParts.push(board.summary.name);
-    }
 
     infoParts.push(`${doc.size}x${doc.size}`);
     infoParts.push(`${bingos.length} bingo${bingos.length === 1 ? "" : "s"}`);
