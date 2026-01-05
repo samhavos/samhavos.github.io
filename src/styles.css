@@ -133,7 +133,7 @@ select {
   --board-fill: rgba(15, 23, 42, 0.95);
   --board-marker: #e2e8f0;
   --board-marker-soft: rgba(226, 232, 240, 0.35);
-  --board-lines: rgba(226, 232, 240, 0.85);
+  --board-lines: rgba(255, 255, 255, 0.95);
   --board-line-width: clamp(2px, 0.6vw, 5px);
   --board-ink-fill: rgba(226, 232, 240, 0.18);
   --board-hover-fill: rgba(148, 163, 184, 0.18);

@@ -25,6 +25,13 @@ type SquareFontSpec = {
   lineHeight?: number;
 };
 
+type RgbaColor = {
+  r: number;
+  g: number;
+  b: number;
+  a: number;
+};
+
 const AVAILABLE_SQUARE_FONTS: SquareFontSpec[] = [
   { name: "Bristol", scale: 1.15, lineHeight: 1.1 },
   { name: "Janitor", scale: 1 },
@@ -32,10 +39,73 @@ const AVAILABLE_SQUARE_FONTS: SquareFontSpec[] = [
   { name: "Sortelo", scale: 1.5 }
 ];
 
+const DEFAULT_BOARD_LINE_COLOR = "rgba(17, 17, 17, 0.92)";
+const DEFAULT_GRID_COLOR: RgbaColor = { r: 17, g: 17, b: 17, a: 0.92 };
+
 const INITIAL_STATUS: StatusMessage = {
   level: "info",
   text: "Enter a GitHub repo to load boards."
 };
+
+function clampAlpha(value: number): number {
+  if (!Number.isFinite(value)) {
+    return 1;
+  }
+  return Math.max(0, Math.min(1, value));
+}
+
+function parseRgbaColor(value: string): RgbaColor | null {
+  const match = value
+    .trim()
+    .match(/^rgba?\(\s*([0-9]+(?:\.[0-9]+)?)\s*,\s*([0-9]+(?:\.[0-9]+)?)\s*,\s*([0-9]+(?:\.[0-9]+)?)(?:\s*,\s*([0-9]+(?:\.[0-9]+)?)\s*)?\)$/i);
+
+  if (!match) {
+    return null;
+  }
+
+  const r = Number(match[1]);
+  const g = Number(match[2]);
+  const b = Number(match[3]);
+  const a = match[4] !== undefined ? Number(match[4]) : 1;
+
+  if ([r, g, b, a].some((channel) => Number.isNaN(channel))) {
+    return null;
+  }
+
+  return {
+    r: Math.max(0, Math.min(255, r)),
+    g: Math.max(0, Math.min(255, g)),
+    b: Math.max(0, Math.min(255, b)),
+    a: clampAlpha(a)
+  };
+}
+
+function formatRgbaColor(color: RgbaColor): string {
+  const r = Math.round(color.r);
+  const g = Math.round(color.g);
+  const b = Math.round(color.b);
+  const a = clampAlpha(color.a);
+  const alphaText = Number.isInteger(a) ? a.toString(10) : a.toFixed(3).replace(/\.0+$/, "").replace(/0+$/, "");
+  return `rgba(${r}, ${g}, ${b}, ${alphaText})`;
+}
+
+function lightenColor(color: RgbaColor, ratio: number): RgbaColor {
+  return {
+    r: Math.round(color.r + (255 - color.r) * ratio),
+    g: Math.round(color.g + (255 - color.g) * ratio),
+    b: Math.round(color.b + (255 - color.b) * ratio),
+    a: color.a
+  };
+}
+
+function darkenColor(color: RgbaColor, ratio: number): RgbaColor {
+  return {
+    r: Math.round(color.r * (1 - ratio)),
+    g: Math.round(color.g * (1 - ratio)),
+    b: Math.round(color.b * (1 - ratio)),
+    a: color.a
+  };
+}
 
 function formatBoardLabel(fileName: string): string {
   return fileName.toLowerCase().endsWith(".json") ? fileName.slice(0, -5) : fileName;
@@ -252,7 +322,7 @@ function getStrikeTexture(seedValue: string, orientation: LineOrientation): stri
   return texture;
 }
 
-function buildGridTexture(seedValue: string, orientation: GridOrientation): string {
+function buildGridTexture(seedValue: string, orientation: GridOrientation, strokeColor: string): string {
   const rand = createRandomGenerator(seedValue);
   const jitter = (base: number, spread: number) => base + (rand() - 0.5) * spread;
 
@@ -310,6 +380,21 @@ function buildGridTexture(seedValue: string, orientation: GridOrientation): stri
   const mainPath = composePath(mainOffsets, orientation);
   const accentPath = composePath(accentOffsets, orientation);
 
+  const baseColor = parseRgbaColor(strokeColor) ?? DEFAULT_GRID_COLOR;
+  const normalizedBase: RgbaColor = { ...baseColor, a: clampAlpha(baseColor.a) };
+  const baseAlpha = normalizedBase.a;
+
+  const mainLight = lightenColor(normalizedBase, 0.06);
+  const mainDark = darkenColor(normalizedBase, 0.08);
+  const accentLight = lightenColor(normalizedBase, 0.18);
+  const accentDark = darkenColor(normalizedBase, 0.22);
+
+  const mainStartColor = formatRgbaColor({ ...mainLight, a: clampAlpha(baseAlpha * 1.05) });
+  const mainMidColor = formatRgbaColor({ ...normalizedBase, a: clampAlpha(baseAlpha * 0.85) });
+  const mainEndColor = formatRgbaColor({ ...mainDark, a: clampAlpha(baseAlpha * 0.95) });
+  const accentStartColor = formatRgbaColor({ ...accentLight, a: clampAlpha(baseAlpha * 0.6) });
+  const accentEndColor = formatRgbaColor({ ...accentDark, a: clampAlpha(baseAlpha * 0.35) });
+
   const gradient = isVertical
     ? { x1: 32, y1: 0, x2: 32, y2: 256 }
     : { x1: 0, y1: 32, x2: 256, y2: 32 };
@@ -317,19 +402,12 @@ function buildGridTexture(seedValue: string, orientation: GridOrientation): stri
   const mainStrokeWidth = isVertical ? 40 : 40;
   const accentStrokeWidth = mainStrokeWidth * 0.52;
 
-  const baseTone = rand() * 0.08;
-  const startColor = `rgba(${18 + baseTone * 120}, ${18 + baseTone * 120}, ${18 + baseTone * 120}, ${0.92 + rand() * 0.04})`;
-  const midColor = `rgba(${10 + baseTone * 90}, ${10 + baseTone * 90}, ${10 + baseTone * 90}, ${0.82 + rand() * 0.06})`;
-  const endColor = `rgba(${4 + baseTone * 60}, ${4 + baseTone * 60}, ${4 + baseTone * 60}, ${0.95})`;
-  const accentStartColor = `rgba(${36 + baseTone * 80}, ${36 + baseTone * 80}, ${36 + baseTone * 80}, ${0.65 + rand() * 0.08})`;
-  const accentEndColor = `rgba(${12 + baseTone * 70}, ${12 + baseTone * 70}, ${12 + baseTone * 70}, ${0.35 + rand() * 0.08})`;
-
   const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='${viewBox}' preserveAspectRatio='none'>` +
     `<defs>` +
     `<linearGradient id='mainGrad' gradientUnits='userSpaceOnUse' x1='${gradient.x1}' y1='${gradient.y1}' x2='${gradient.x2}' y2='${gradient.y2}'>` +
-    `<stop offset='0' stop-color='${startColor}'/>` +
-    `<stop offset='0.42' stop-color='${midColor}'/>` +
-    `<stop offset='1' stop-color='${endColor}'/>` +
+    `<stop offset='0' stop-color='${mainStartColor}'/>` +
+    `<stop offset='0.42' stop-color='${mainMidColor}'/>` +
+    `<stop offset='1' stop-color='${mainEndColor}'/>` +
     `</linearGradient>` +
     `<linearGradient id='accentGrad' gradientUnits='userSpaceOnUse' x1='${gradient.x1}' y1='${gradient.y1}' x2='${gradient.x2}' y2='${gradient.y2}'>` +
     `<stop offset='0' stop-color='${accentStartColor}'/>` +
@@ -350,13 +428,14 @@ function buildGridTexture(seedValue: string, orientation: GridOrientation): stri
 
 const gridTextureCache = new Map<string, string>();
 
-function getGridTexture(seedValue: string, orientation: GridOrientation): string {
-  const key = `${orientation}|${seedValue}`;
+function getGridTexture(seedValue: string, orientation: GridOrientation, strokeColor: string): string {
+  const normalizedColor = strokeColor.replace(/\s+/g, " ").trim();
+  const key = `${orientation}|${normalizedColor}|${seedValue}`;
   const cached = gridTextureCache.get(key);
   if (cached) {
     return cached;
   }
-  const texture = buildGridTexture(seedValue, orientation);
+  const texture = buildGridTexture(seedValue, orientation, normalizedColor);
   gridTextureCache.set(key, texture);
   return texture;
 }
@@ -473,6 +552,7 @@ export function initializeApp(hints: QueryHints = {}): void {
     currentBoard: LoadedBoard | null;
     isCommitting: boolean;
     isFullscreen: boolean;
+    isDarkMode: boolean;
   } = {
     repo: null,
     defaultBranch: null,
@@ -481,7 +561,8 @@ export function initializeApp(hints: QueryHints = {}): void {
     boards: [],
     currentBoard: null,
     isCommitting: false,
-    isFullscreen: false
+    isFullscreen: false,
+    isDarkMode: false
   };
 
   updateCreateLink();
@@ -924,7 +1005,9 @@ export function initializeApp(hints: QueryHints = {}): void {
     inkLayer.className = "board__grid-ink";
     inkLayer.setAttribute("aria-hidden", "true");
     elements.boardGrid.appendChild(inkLayer);
-    renderGridInk(inkLayer, doc.size, maskSeedBase);
+    const computedStyles = window.getComputedStyle(root);
+    const boardLineColor = computedStyles.getPropertyValue("--board-lines").trim() || DEFAULT_BOARD_LINE_COLOR;
+    renderGridInk(inkLayer, doc.size, maskSeedBase, boardLineColor);
 
     doc.items.forEach((item, index) => {
       const button = document.createElement("button");
@@ -959,7 +1042,7 @@ export function initializeApp(hints: QueryHints = {}): void {
     renderBingoLines(bingos, doc.size, maskSeedBase);
   }
 
-  function renderGridInk(layer: HTMLDivElement, size: number, boardSeed: string): void {
+  function renderGridInk(layer: HTMLDivElement, size: number, boardSeed: string, lineColor: string): void {
     layer.innerHTML = "";
     if (!Number.isFinite(size) || size <= 0) {
       return;
@@ -971,7 +1054,7 @@ export function initializeApp(hints: QueryHints = {}): void {
       const lineSeed = `${boardSeed}:grid-h:${row}`;
       const line = document.createElement("div");
       line.className = "board__grid-ink-line board__grid-ink-line--horizontal";
-      line.style.setProperty("--board-grid-texture", getGridTexture(lineSeed, "horizontal"));
+      line.style.setProperty("--board-grid-texture", getGridTexture(lineSeed, "horizontal", lineColor));
 
       const thickness = row === 0 || row === size ? baseThickness + 1.2 : baseThickness;
       line.style.height = `${thickness}px`;
@@ -1000,7 +1083,7 @@ export function initializeApp(hints: QueryHints = {}): void {
       const lineSeed = `${boardSeed}:grid-v:${col}`;
       const line = document.createElement("div");
       line.className = "board__grid-ink-line board__grid-ink-line--vertical";
-      line.style.setProperty("--board-grid-texture", getGridTexture(lineSeed, "vertical"));
+      line.style.setProperty("--board-grid-texture", getGridTexture(lineSeed, "vertical", lineColor));
 
       const thickness = col === 0 || col === size ? baseThickness + 1.2 : baseThickness;
       line.style.width = `${thickness}px`;
@@ -1239,9 +1322,13 @@ export function initializeApp(hints: QueryHints = {}): void {
   }
 
   function updateDarkMode(isDark: boolean): void {
+    state.isDarkMode = isDark;
     elements.body.classList.toggle("body--dark", isDark);
     root.classList.toggle("app--dark", isDark);
     elements.status.classList.toggle("status--dark", isDark);
     elements.fullscreenToggle.classList.toggle("app__button--fullscreen-dark", isDark);
+    if (state.currentBoard) {
+      renderBoard(state.currentBoard);
+    }
   }
 }
