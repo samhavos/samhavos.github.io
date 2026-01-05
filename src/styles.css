@@ -159,7 +159,7 @@ select {
 .app__connection-row {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.75rem;
 }
 
@@ -240,7 +240,7 @@ select {
 .app__connection-toggle:hover,
 .app__connection-toggle:focus-visible {
   background-color: rgba(15, 23, 42, 0.18);
-  transform: translate(-2px, -2px) rotate(-0.6deg);
+  transform: translate(-2px, -2px);
   box-shadow: 8px 8px 0 var(--panel-border);
   outline: none;
 }
@@ -249,23 +249,22 @@ select {
   font-size: 1.05rem;
 }
 
-.app__connection-status {
-  margin-left: auto;
-  margin-right: 0.5rem;
-  font-size: 0.95rem;
-  color: var(--app-muted);
+.app__connection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  flex: 1 1 320px;
 }
 
 .app__connection-chevron {
-  width: 1rem;
-  height: 1rem;
+  margin-left: auto;
+  padding: 0.85rem 1.1rem;
   display: inline-flex;
-}
-
-.app__connection-chevron svg {
-  width: 100%;
-  height: 100%;
-  display: block;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease, opacity 0.2s ease;
+  align-self: flex-start;
   fill: currentColor;
   transition: transform 0.15s ease;
 }
@@ -337,7 +336,7 @@ select {
 }
 
 .app__button {
-  padding: 0.7rem 1.2rem;
+  padding: 1.15rem;
   border-radius: 20px;
   border: 2px solid var(--button-border);
   background-color: var(--button-bg);
@@ -351,7 +350,7 @@ select {
 .app__button:hover,
 .app__button:focus-visible {
   background-color: var(--button-hover-bg);
-  transform: translate(-2px, -2px) rotate(-0.6deg);
+  transform: translate(-2px, -2px);
   outline: none;
   box-shadow: 8px 8px 0 var(--panel-border);
 }
@@ -889,6 +888,7 @@ select {
   right: clamp(0.9rem, 3vw, 1.5rem);
   opacity: 0.55;
   z-index: 1000;
+  padding: 0.65rem 1rem;
 }
 
 .app--fullscreen .app__button--fullscreen:hover,
