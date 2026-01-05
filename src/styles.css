@@ -222,6 +222,14 @@ select {
   align-self: center;
 }
 
+.app__connection-chevron svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  fill: currentColor;
+  transition: transform 0.15s ease;
+}
+
 .app__connection-toggle--open .app__connection-chevron svg {
   transform: rotate(180deg);
 }
