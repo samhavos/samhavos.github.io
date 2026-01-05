@@ -394,21 +394,38 @@ export function initializeApp(hints: QueryHints = {}): void {
       </span>
     </button>
     <header class="app__header">
-      <div class="app__control-group app__control-group--repo">
-        <label class="app__control-label" for="repo-input">Data repository</label>
-        <input class="app__control-input" id="repo-input" name="repo" placeholder="owner/name or https://github.com/owner/name" autocomplete="off" />
-        <button class="app__button app__button--connect" id="repo-apply" type="button">Connect</button>
-      </div>
-      <div class="app__control-group app__control-group--token">
-        <label class="app__control-label" for="token-input">GitHub token (optional)</label>
-        <input class="app__control-input" id="token-input" name="token" type="password" autocomplete="off" placeholder="ghp_..." />
-        <div class="app__checkbox-row">
-          <input class="app__checkbox" id="token-remember" type="checkbox" />
-          <label class="app__checkbox-label" for="token-remember">Remember token on this device</label>
+      <div class="app__connection">
+        <button class="app__connection-toggle" id="connection-toggle" type="button" aria-expanded="false">
+          <span class="app__connection-toggle-label">Connection details</span>
+          <span class="app__connection-status" id="connection-status">Not connected</span>
+          <span class="app__connection-chevron" aria-hidden="true">
+            <svg viewBox="0 0 16 16" focusable="false">
+              <path d="M4.47 6.03a.75.75 0 0 1 1.06 0L8 8.44l2.47-2.41a.75.75 0 1 1 1.06 1.06l-3 2.92a.75.75 0 0 1-1.06 0l-3-2.92a.75.75 0 0 1 0-1.06Z" />
+            </svg>
+          </span>
+        </button>
+        <div class="app__connection-panel" id="connection-panel" hidden>
+          <div class="app__connection-grid">
+            <div class="app__control-group app__control-group--repo">
+              <label class="app__control-label" for="repo-input">Data repository</label>
+              <input class="app__control-input" id="repo-input" name="repo" placeholder="owner/name or https://github.com/owner/name" autocomplete="off" />
+              <button class="app__button app__button--connect" id="repo-apply" type="button">Connect</button>
+            </div>
+            <div class="app__control-group app__control-group--token">
+              <label class="app__control-label" for="token-input">GitHub token (optional)</label>
+              <input class="app__control-input" id="token-input" name="token" type="password" autocomplete="off" placeholder="ghp_..." />
+              <div class="app__checkbox-row">
+                <input class="app__checkbox" id="token-remember" type="checkbox" />
+                <label class="app__checkbox-label" for="token-remember">Remember token on this device</label>
+              </div>
+              <button class="app__button app__button--token" id="token-apply" type="button">Update Token</button>
+            </div>
+          </div>
+          <div class="app__connection-actions">
+            <button class="app__button app__button--sign-out" id="sign-out" type="button">Sign out</button>
+          </div>
         </div>
-        <button class="app__button app__button--token" id="token-apply" type="button">Update Token</button>
       </div>
-      <button class="app__button app__button--sign-out" id="sign-out" type="button">Sign out</button>
     </header>
     <main class="app__main">
       <div class="board">
@@ -429,6 +446,9 @@ export function initializeApp(hints: QueryHints = {}): void {
 
   const elements = {
     body: document.body,
+    connectionToggle: document.getElementById("connection-toggle") as HTMLButtonElement,
+    connectionPanel: document.getElementById("connection-panel") as HTMLDivElement,
+    connectionStatus: document.getElementById("connection-status") as HTMLSpanElement,
     repoInput: document.getElementById("repo-input") as HTMLInputElement,
     repoApply: document.getElementById("repo-apply") as HTMLButtonElement,
     tokenInput: document.getElementById("token-input") as HTMLInputElement,
@@ -448,6 +468,7 @@ export function initializeApp(hints: QueryHints = {}): void {
     repo: RepoCoords | null;
     defaultBranch: string | null;
     token: string | null;
+    tokenRemembered: boolean;
     boards: BoardSummary[];
     currentBoard: LoadedBoard | null;
     isCommitting: boolean;
@@ -456,6 +477,7 @@ export function initializeApp(hints: QueryHints = {}): void {
     repo: null,
     defaultBranch: null,
     token: null,
+    tokenRemembered: false,
     boards: [],
     currentBoard: null,
     isCommitting: false,
@@ -463,6 +485,7 @@ export function initializeApp(hints: QueryHints = {}): void {
   };
 
   updateCreateLink();
+  refreshConnectionStatus();
 
   let pendingBoardHint: string | null = hints.board ?? null;
   let statusInitialized = false;
@@ -510,6 +533,7 @@ export function initializeApp(hints: QueryHints = {}): void {
     }
 
     updateCreateLink();
+    refreshConnectionStatus();
 
     if (ignored.length > 0) {
       setStatus({ level: "error", text: `Ignored URL parameter(s): ${ignored.join(", ")}.` });
@@ -536,14 +560,22 @@ export function initializeApp(hints: QueryHints = {}): void {
 
     if (hints.token) {
       elements.tokenRemember.checked = false;
+      state.tokenRemembered = false;
     } else {
       elements.tokenRemember.checked = tokenState.remember;
+      state.tokenRemembered = tokenState.remember && Boolean(tokenState.token);
     }
 
     updateCreateLink();
+    refreshConnectionStatus();
+    setConnectionPanelOpen(!state.repo);
   }
 
   function attachEventHandlers(): void {
+    elements.connectionToggle.addEventListener("click", () => {
+      setConnectionPanelOpen(elements.connectionPanel.hidden);
+    });
+
     elements.repoApply.addEventListener("click", () => {
       const value = elements.repoInput.value.trim();
       void connectToRepo(value);
@@ -569,20 +601,31 @@ export function initializeApp(hints: QueryHints = {}): void {
     });
 
     elements.tokenRemember.addEventListener("change", () => {
-      if (!elements.tokenRemember.checked) {
-        storeToken(null, false);
-        setStatus({ level: "info", text: "Token will only persist in memory." });
-      } else {
+      if (elements.tokenRemember.checked) {
         storeToken(state.token, true);
+        state.tokenRemembered = Boolean(state.token);
+        if (state.token) {
+          setStatus({ level: "success", text: "Token will be remembered on this device." });
+        } else {
+          setStatus({ level: "info", text: "No token yet—add one to remember it here." });
+        }
+      } else {
+        storeToken(null, false);
+        state.tokenRemembered = false;
+        setStatus({ level: "info", text: "Token will only persist in memory." });
       }
+      refreshConnectionStatus();
     });
 
     elements.signOut.addEventListener("click", () => {
       state.token = null;
+      state.tokenRemembered = false;
       elements.tokenInput.value = "";
       clearToken();
       elements.tokenRemember.checked = false;
       setStatus({ level: "success", text: "Signed out locally." });
+      refreshConnectionStatus();
+      setConnectionPanelOpen(true);
     });
 
     elements.boardSelect.addEventListener("change", () => {
@@ -605,6 +648,32 @@ export function initializeApp(hints: QueryHints = {}): void {
     prefersDark.addEventListener("change", ({ matches }) => {
       updateDarkMode(matches);
     });
+  }
+
+  function setConnectionPanelOpen(open: boolean): void {
+    elements.connectionPanel.hidden = !open;
+    elements.connectionPanel.setAttribute("aria-hidden", open ? "false" : "true");
+    elements.connectionToggle.setAttribute("aria-expanded", open ? "true" : "false");
+    elements.connectionToggle.classList.toggle("app__connection-toggle--open", open);
+  }
+
+  function refreshConnectionStatus(): void {
+    const parts: string[] = [];
+
+    if (state.repo) {
+      const branchFragment = state.defaultBranch ? ` (${state.defaultBranch})` : "";
+      parts.push(`${state.repo.owner}/${state.repo.name}${branchFragment}`);
+    } else {
+      parts.push("Repo not connected");
+    }
+
+    let tokenFragment = "Token not set";
+    if (state.token) {
+      tokenFragment = state.tokenRemembered ? "Token saved" : "Token in memory";
+    }
+    parts.push(tokenFragment);
+
+    elements.connectionStatus.textContent = parts.join(" • ");
   }
 
   function updateCreateLink(): void {
@@ -637,12 +706,16 @@ export function initializeApp(hints: QueryHints = {}): void {
       state.repo = parsed;
       state.defaultBranch = repoInfo.default_branch;
       storeRepo(`${parsed.owner}/${parsed.name}`);
+      refreshConnectionStatus();
+      setConnectionPanelOpen(false);
       updateCreateLink();
       setStatus({ level: "success", text: `Connected to ${parsed.owner}/${parsed.name} (branch ${state.defaultBranch}).` });
       await loadBoards();
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to read repository.";
       setStatus({ level: "error", text: message });
+      refreshConnectionStatus();
+      setConnectionPanelOpen(true);
     } finally {
       elements.repoApply.disabled = false;
     }
@@ -1113,12 +1186,15 @@ export function initializeApp(hints: QueryHints = {}): void {
   function updateToken(rawToken: string): void {
     state.token = rawToken ? rawToken : null;
     storeToken(state.token, elements.tokenRemember.checked);
+    state.tokenRemembered = elements.tokenRemember.checked && Boolean(state.token);
 
     if (state.token) {
       setStatus({ level: "success", text: "Token updated for this session." });
     } else {
       setStatus({ level: "info", text: "Cleared token from memory." });
     }
+
+    refreshConnectionStatus();
 
     if (state.repo) {
       void loadBoards();
