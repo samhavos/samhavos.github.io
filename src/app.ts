@@ -6,7 +6,7 @@ import { buildCommitMessage, computeBingoLines, normalizeBoardDocument } from ".
 import { decodeBase64, encodeBase64 } from "./encoding";
 import { fetchBoardContent, fetchBoardDirectory, fetchRepoDetails, GithubError, putBoardContent } from "./github";
 import { parseRepoInput } from "./repo";
-import { clearToken, loadStoredRepo, loadTokenState, storeRepo, storeToken } from "./storage";
+import { clearStoredRepo, clearToken, loadStoredRepo, loadTokenState, storeRepo, storeToken } from "./storage";
 import type { QueryHints } from "./routing";
 import type {
   BoardDocument,
@@ -392,7 +392,6 @@ export function initializeApp(hints: QueryHints = {}): void {
               <div class="app__control-group app__control-group--repo">
                 <label class="app__control-label" for="repo-input">Data repository</label>
                 <input class="app__control-input" id="repo-input" name="repo" placeholder="owner/name or https://github.com/owner/name" autocomplete="off" />
-                <button class="app__button app__button--connect" id="repo-apply" type="button">Connect</button>
               </div>
               <div class="app__control-group app__control-group--token">
                 <label class="app__control-label" for="token-input">GitHub token (optional)</label>
@@ -401,11 +400,11 @@ export function initializeApp(hints: QueryHints = {}): void {
                   <input class="app__checkbox" id="token-remember" type="checkbox" />
                   <label class="app__checkbox-label" for="token-remember">Remember token on this device</label>
                 </div>
-                <button class="app__button app__button--token" id="token-apply" type="button">Update Token</button>
               </div>
             </div>
             <div class="app__connection-actions">
-              <button class="app__button app__button--sign-out" id="sign-out" type="button">Sign out</button>
+              <button class="app__button app__button--connect" id="connection-apply" type="button">Connect</button>
+              <button class="app__button app__button--clear" id="connection-clear" type="button">Clear</button>
             </div>
           </div>
         </div>
@@ -452,11 +451,10 @@ export function initializeApp(hints: QueryHints = {}): void {
     connectionPanel: document.getElementById("connection-panel") as HTMLDivElement,
     connectionStatus: document.getElementById("connection-status") as HTMLSpanElement,
     repoInput: document.getElementById("repo-input") as HTMLInputElement,
-    repoApply: document.getElementById("repo-apply") as HTMLButtonElement,
     tokenInput: document.getElementById("token-input") as HTMLInputElement,
-    tokenApply: document.getElementById("token-apply") as HTMLButtonElement,
     tokenRemember: document.getElementById("token-remember") as HTMLInputElement,
-    signOut: document.getElementById("sign-out") as HTMLButtonElement,
+    connectionApply: document.getElementById("connection-apply") as HTMLButtonElement,
+    connectionClear: document.getElementById("connection-clear") as HTMLButtonElement,
     boardSelect: document.getElementById("board-select") as HTMLSelectElement,
     boardGrid: document.getElementById("board-grid") as HTMLDivElement,
     boardInfo: document.getElementById("board-info") as HTMLSpanElement,
@@ -578,27 +576,21 @@ export function initializeApp(hints: QueryHints = {}): void {
       setConnectionPanelOpen(elements.connectionPanel.hidden);
     });
 
-    elements.repoApply.addEventListener("click", () => {
-      const value = elements.repoInput.value.trim();
-      void connectToRepo(value);
+    elements.connectionApply.addEventListener("click", () => {
+      applyConnectionSettings();
     });
 
     elements.repoInput.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
         event.preventDefault();
-        const value = elements.repoInput.value.trim();
-        void connectToRepo(value);
+        applyConnectionSettings();
       }
-    });
-
-    elements.tokenApply.addEventListener("click", () => {
-      updateToken(elements.tokenInput.value.trim());
     });
 
     elements.tokenInput.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
         event.preventDefault();
-        updateToken(elements.tokenInput.value.trim());
+        applyConnectionSettings();
       }
     });
 
@@ -619,14 +611,25 @@ export function initializeApp(hints: QueryHints = {}): void {
       refreshConnectionStatus();
     });
 
-    elements.signOut.addEventListener("click", () => {
+    elements.connectionClear.addEventListener("click", () => {
+      state.repo = null;
+      state.defaultBranch = null;
+      state.boards = [];
+      state.currentBoard = null;
+      elements.repoInput.value = "";
+      refreshBoardOptions();
+      renderBoard(null);
+      updateCreateLink();
+      clearStoredRepo();
+
       state.token = null;
       state.tokenRemembered = false;
       elements.tokenInput.value = "";
       clearToken();
       elements.tokenRemember.checked = false;
-      setStatus({ level: "success", text: "Signed out locally." });
+
       refreshConnectionStatus();
+      setStatus({ level: "success", text: "Cleared connection details." });
       setConnectionPanelOpen(true);
     });
 
@@ -650,6 +653,17 @@ export function initializeApp(hints: QueryHints = {}): void {
     prefersDark.addEventListener("change", ({ matches }) => {
       updateDarkMode(matches);
     });
+  }
+
+  function applyConnectionSettings(): void {
+    const tokenValue = elements.tokenInput.value.trim();
+    const currentToken = state.token ?? "";
+    if (tokenValue !== currentToken) {
+      updateToken(tokenValue);
+    }
+
+    const repoValue = elements.repoInput.value.trim();
+    void connectToRepo(repoValue);
   }
 
   function setConnectionPanelOpen(open: boolean): void {
@@ -701,7 +715,7 @@ export function initializeApp(hints: QueryHints = {}): void {
     }
 
     setStatus({ level: "info", text: "Checking repository access..." });
-    elements.repoApply.disabled = true;
+    elements.connectionApply.disabled = true;
 
     try {
       const repoInfo = await fetchRepoDetails(parsed, state.token ?? undefined);
@@ -719,7 +733,7 @@ export function initializeApp(hints: QueryHints = {}): void {
       refreshConnectionStatus();
       setConnectionPanelOpen(true);
     } finally {
-      elements.repoApply.disabled = false;
+      elements.connectionApply.disabled = false;
     }
   }
 
