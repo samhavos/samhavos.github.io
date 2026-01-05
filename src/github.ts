@@ -1,7 +1,6 @@
 /**
  * @file Wrappers around the GitHub REST API used by the frontend.
  */
-
 import type {
   BoardSummary,
   GithubContentFile,
@@ -89,6 +88,37 @@ export async function putBoardContent(
   return githubFetchJson<PutContentResponse>(url, token, {
     method: "PUT",
     body: JSON.stringify(payload)
+  });
+}
+
+/**
+ * Create a new board document in the data repository.
+ */
+export async function createBoardContent(
+  repo: RepoCoords,
+  path: string,
+  payload: {
+    message: string;
+    content: string;
+    branch?: string;
+  },
+  token?: string
+): Promise<PutContentResponse> {
+  const encodedPath = encodePath(path);
+  const url = `https://api.github.com/repos/${repo.owner}/${repo.name}/contents/${encodedPath}`;
+
+  const body: Record<string, string> = {
+    message: payload.message,
+    content: payload.content
+  };
+
+  if (payload.branch) {
+    body.branch = payload.branch;
+  }
+
+  return githubFetchJson<PutContentResponse>(url, token, {
+    method: "PUT",
+    body: JSON.stringify(body)
   });
 }
 

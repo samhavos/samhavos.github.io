@@ -416,6 +416,7 @@ export function initializeApp(hints: QueryHints = {}): void {
           <label class="board__label" for="board-select">Board</label>
           <select class="board__select" id="board-select"></select>
           <span class="board__info" id="board-info"></span>
+          <a class="board__create-link" id="board-create-link" href="new.html">Create new board</a>
         </div>
         <div class="board__grid-container">
           <div class="board__grid" id="board-grid" aria-busy="false"></div>
@@ -439,7 +440,8 @@ export function initializeApp(hints: QueryHints = {}): void {
     boardInfo: document.getElementById("board-info") as HTMLSpanElement,
     boardLines: document.getElementById("board-lines") as HTMLDivElement,
     status: document.getElementById("status") as HTMLDivElement,
-    fullscreenToggle: document.getElementById("fullscreen-toggle") as HTMLButtonElement
+    fullscreenToggle: document.getElementById("fullscreen-toggle") as HTMLButtonElement,
+    createLink: document.getElementById("board-create-link") as HTMLAnchorElement
   };
 
   const state: {
@@ -459,6 +461,8 @@ export function initializeApp(hints: QueryHints = {}): void {
     isCommitting: false,
     isFullscreen: false
   };
+
+  updateCreateLink();
 
   let pendingBoardHint: string | null = hints.board ?? null;
   let statusInitialized = false;
@@ -505,6 +509,8 @@ export function initializeApp(hints: QueryHints = {}): void {
       applied.push(`board ${pendingBoardHint}`);
     }
 
+    updateCreateLink();
+
     if (ignored.length > 0) {
       setStatus({ level: "error", text: `Ignored URL parameter(s): ${ignored.join(", ")}.` });
     } else if (applied.length > 0) {
@@ -533,6 +539,8 @@ export function initializeApp(hints: QueryHints = {}): void {
     } else {
       elements.tokenRemember.checked = tokenState.remember;
     }
+
+    updateCreateLink();
   }
 
   function attachEventHandlers(): void {
@@ -585,6 +593,11 @@ export function initializeApp(hints: QueryHints = {}): void {
       }
     });
 
+    elements.createLink.addEventListener("click", (event) => {
+      event.preventDefault();
+      window.location.assign(buildCreateLinkHref(state.repo));
+    });
+
     elements.fullscreenToggle.addEventListener("click", () => {
       toggleFullscreen(!state.isFullscreen);
     });
@@ -592,6 +605,19 @@ export function initializeApp(hints: QueryHints = {}): void {
     prefersDark.addEventListener("change", ({ matches }) => {
       updateDarkMode(matches);
     });
+  }
+
+  function updateCreateLink(): void {
+    elements.createLink.href = buildCreateLinkHref(state.repo);
+  }
+
+  function buildCreateLinkHref(repo: RepoCoords | null): string {
+    const params = new URLSearchParams();
+    if (repo) {
+      params.set("repo", `${repo.owner}/${repo.name}`);
+    }
+    const query = params.toString();
+    return query ? `new.html?${query}` : "new.html";
   }
 
   updateDarkMode(prefersDark.matches);
@@ -611,6 +637,7 @@ export function initializeApp(hints: QueryHints = {}): void {
       state.repo = parsed;
       state.defaultBranch = repoInfo.default_branch;
       storeRepo(`${parsed.owner}/${parsed.name}`);
+      updateCreateLink();
       setStatus({ level: "success", text: `Connected to ${parsed.owner}/${parsed.name} (branch ${state.defaultBranch}).` });
       await loadBoards();
     } catch (error) {
