@@ -39,6 +39,7 @@
   --app-foreground: #141414;
   --app-muted: rgba(36, 41, 46, 0.7);
   --panel-border: rgba(20, 20, 20, 0.85);
+  --panel-bg: rgba(255, 255, 255, 0.9);
   --panel-shadow: 18px 22px 0 rgba(17, 23, 42, 0.12);
   --control-background: rgba(255, 255, 255, 0.92);
   --control-border: rgba(36, 36, 36, 0.8);
@@ -108,6 +109,7 @@ select {
   --app-foreground: #f4f5ff;
   --app-muted: rgba(226, 232, 240, 0.75);
   --panel-border: rgba(226, 232, 240, 0.75);
+  --panel-bg: rgba(17, 24, 39, 0.85);
   --panel-shadow: 18px 22px 0 rgba(0, 0, 0, 0.55);
   --control-background: rgba(17, 24, 39, 0.9);
   --control-border: rgba(226, 232, 240, 0.5);
@@ -159,7 +161,7 @@ select {
 .app__connection-row {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: stretch;
   gap: 0.75rem;
 }
 
@@ -174,50 +176,6 @@ select {
   flex-direction: column;
   gap: 0.9rem;
   flex: 1 1 320px;
-}
-
-.app__button--fullscreen {
-  margin-left: auto;
-  padding: 0.6rem;
-  min-width: clamp(2.6rem, 5vw, 3rem);
-  aspect-ratio: 1 / 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 20px;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease, opacity 0.2s ease;
-}
-
-.app__button--fullscreen .app__fullscreen-icon {
-  display: block;
-  width: 1.1rem;
-  height: 1.1rem;
-}
-
-.app__button--fullscreen .app__fullscreen-icon svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.app__button--fullscreen .app__fullscreen-icon path {
-  fill: currentColor;
-}
-
-.app__button--fullscreen .app__fullscreen-icon--exit {
-  display: none;
-}
-
-.app__button--fullscreen[aria-pressed="true"] .app__fullscreen-icon--enter {
-  display: none;
-}
-
-.app__button--fullscreen[aria-pressed="true"] .app__fullscreen-icon--exit {
-  display: block;
-}
-
-.app__button--fullscreen:focus-visible {
-  outline: none;
 }
 
 .app__connection-toggle {
@@ -249,24 +207,19 @@ select {
   font-size: 1.05rem;
 }
 
-.app__connection {
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-  flex: 1 1 320px;
+.app__connection-status {
+  margin-left: auto;
+  margin-right: 0.5rem;
+  font-size: 0.95rem;
+  color: var(--app-muted);
 }
 
 .app__connection-chevron {
-  margin-left: auto;
-  padding: 0.85rem 1.1rem;
+  width: 1rem;
+  height: 1rem;
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 20px;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease, opacity 0.2s ease;
-  align-self: flex-start;
-  fill: currentColor;
-  transition: transform 0.15s ease;
+  margin-left: 0.25rem;
+  align-self: center;
 }
 
 .app__connection-toggle--open .app__connection-chevron svg {
@@ -336,7 +289,7 @@ select {
 }
 
 .app__button {
-  padding: 1.15rem;
+  padding: 0.7rem 1.2rem;
   border-radius: 20px;
   border: 2px solid var(--button-border);
   background-color: var(--button-bg);
@@ -361,6 +314,50 @@ select {
   cursor: not-allowed;
   box-shadow: none;
   transform: none;
+}
+
+.app__button--fullscreen {
+  margin-left: auto;
+  width: 55px;
+  height: 55px;
+  display: flex;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease, opacity 0.2s ease;
+}
+
+.app__button--fullscreen .app__fullscreen-icon {
+  display: block;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.app__button--fullscreen .app__fullscreen-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.app__button--fullscreen .app__fullscreen-icon path {
+  fill: currentColor;
+}
+
+.app__button--fullscreen .app__fullscreen-icon--exit {
+  display: none;
+}
+
+.app__button--fullscreen[aria-pressed="true"] .app__fullscreen-icon--enter {
+  display: none;
+}
+
+.app__button--fullscreen[aria-pressed="true"] .app__fullscreen-icon--exit {
+  display: block;
+}
+
+.app__button--fullscreen:focus-visible {
+  outline: none;
 }
 
 .app__checkbox-row {
@@ -884,11 +881,10 @@ select {
 
 .app--fullscreen .app__button--fullscreen {
   position: fixed;
-  top: clamp(0.9rem, 3vw, 1.5rem);
-  right: clamp(0.9rem, 3vw, 1.5rem);
+  top: clamp(1.5rem, 3vw, 2.5rem);
+  right: clamp(1.5rem, 3vw, 2.5rem);
   opacity: 0.55;
   z-index: 1000;
-  padding: 0.65rem 1rem;
 }
 
 .app--fullscreen .app__button--fullscreen:hover,
