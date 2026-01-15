@@ -55,9 +55,44 @@ function clampAlpha(value: number): number {
 }
 
 function parseRgbaColor(value: string): RgbaColor | null {
-  const match = value
-    .trim()
-    .match(/^rgba?\(\s*([0-9]+(?:\.[0-9]+)?)\s*,\s*([0-9]+(?:\.[0-9]+)?)\s*,\s*([0-9]+(?:\.[0-9]+)?)(?:\s*,\s*([0-9]+(?:\.[0-9]+)?)\s*)?\)$/i);
+  const trimmed = value.trim();
+
+  if (trimmed.startsWith("#")) {
+    const hex = trimmed.slice(1);
+    const shorthand = hex.length === 3 || hex.length === 4;
+    const full = hex.length === 6 || hex.length === 8;
+    if (!shorthand && !full) {
+      return null;
+    }
+
+    const normalized = shorthand
+      ? hex
+          .split("")
+          .map((char) => char + char)
+          .join("")
+      : hex;
+
+    const hasAlpha = normalized.length === 8;
+    const r = Number.parseInt(normalized.slice(0, 2), 16);
+    const g = Number.parseInt(normalized.slice(2, 4), 16);
+    const b = Number.parseInt(normalized.slice(4, 6), 16);
+    const aChannel = hasAlpha ? Number.parseInt(normalized.slice(6, 8), 16) / 255 : 1;
+
+    if ([r, g, b, aChannel].some((channel) => Number.isNaN(channel))) {
+      return null;
+    }
+
+    return {
+      r,
+      g,
+      b,
+      a: clampAlpha(aChannel)
+    };
+  }
+
+  const match = trimmed.match(
+    /^rgba?\(\s*([0-9]+(?:\.[0-9]+)?)\s*,\s*([0-9]+(?:\.[0-9]+)?)\s*,\s*([0-9]+(?:\.[0-9]+)?)(?:\s*(?:\/|,)\s*([0-9]+(?:\.[0-9]+)?)\s*)?\)$/i
+  );
 
   if (!match) {
     return null;
