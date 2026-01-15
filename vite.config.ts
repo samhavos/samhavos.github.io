@@ -7,7 +7,7 @@ export default defineConfig({
     strictPort: true
   },
   build: {
-    outDir: "../dist",
+    outDir: "../docs",  // Github pages quirk (otherwise we have to dump everything into '/')
     emptyOutDir: true,
     rollupOptions: {
       input: {
