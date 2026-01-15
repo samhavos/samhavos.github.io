@@ -27,7 +27,7 @@ fi
 
 # Move onto the deploy branch and align it with main as the starting point.
 git fetch pages
-git checkout deploy
+git checkout deploy 2>/dev/null || git checkout -b deploy
 git reset --hard main
 
 # Produce a fresh build so the deploy branch contains exactly what Vite outputs.
@@ -49,6 +49,6 @@ fi
 
 # Commit and update the remote deploy branch.
 git add -A
-# git commit -m "Deploy $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-# git push --force-with-lease pages deploy
-# git checkout main
+git commit -m "Deploy $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+git push --force-with-lease -u pages deploy
+git checkout main
