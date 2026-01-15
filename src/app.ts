@@ -575,7 +575,7 @@ export function initializeApp(hints: QueryHints = {}): void {
   applyQueryHints();
   hydrateFromStorage();
   attachEventHandlers();
-  toggleFullscreen(false);
+  toggleFullscreen(Boolean(hints.fullscreen));
   refreshBoardOptions();
 
   if (!statusInitialized) {
@@ -611,6 +611,10 @@ export function initializeApp(hints: QueryHints = {}): void {
 
     if (pendingBoardHint) {
       applied.push(`board ${pendingBoardHint}`);
+    }
+
+    if (typeof hints.fullscreen === "boolean") {
+      applied.push(`fullscreen ${hints.fullscreen ? "on" : "off"}`);
     }
 
     updateCreateLink();
