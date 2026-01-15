@@ -34,16 +34,16 @@ git reset --hard main
 npx vite build
 
 # Confirm the build succeeded.
-if [[ ! -d dist ]]; then
-  echo "dist directory not found after build" >&2
+if [[ ! -d docs ]]; then
+  echo "docs directory not found after build" >&2
   exit 1
 fi
 
-# Remove dist/ from the gitignore so the dist directory is committed on the deploy branch.
-if [[ -f .gitignore ]] && git check-ignore -q dist/; then
+# Remove docs/ from the gitignore so the docs directory is committed on the deploy branch.
+if [[ -f .gitignore ]] && git check-ignore -q docs/; then
   temp_ignore=$(mktemp)
-  # Strip only the dist/ rule so we continue honouring the rest of the ignore list.
-  grep -vE '^dist/?$' .gitignore > "$temp_ignore"
+  # Strip only the docs/ rule so we continue honouring the rest of the ignore list.
+  grep -vE '^docs/?$' .gitignore > "$temp_ignore"
   mv "$temp_ignore" .gitignore
 fi
 
