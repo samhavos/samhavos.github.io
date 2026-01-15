@@ -39,10 +39,8 @@ type CreationElements = {
   stepMetadata: HTMLDivElement;
   stepSquares: HTMLDivElement;
   repoInput: HTMLInputElement;
-  repoConnect: HTMLButtonElement;
   tokenInput: HTMLInputElement;
   tokenRemember: HTMLInputElement;
-  tokenApply: HTMLButtonElement;
   credentialsContinue: HTMLButtonElement;
   metadataBack: HTMLButtonElement;
   metadataContinue: HTMLButtonElement;
@@ -79,7 +77,6 @@ export function initializeNewBoardApp(hints: QueryHints = {}): void {
           <div class="create-board__field">
             <label class="create-board__label" for="create-repo-input">Data repository</label>
             <input class="create-board__input" id="create-repo-input" name="repo" placeholder="owner/name or https://github.com/owner/name" autocomplete="off" />
-            <button class="create-board__button" id="create-repo-connect" type="submit">Connect</button>
           </div>
           <div class="create-board__field create-board__field--token">
             <label class="create-board__label" for="create-token-input">GitHub token (optional)</label>
@@ -87,9 +84,6 @@ export function initializeNewBoardApp(hints: QueryHints = {}): void {
             <div class="create-board__checkbox-row">
               <input class="create-board__checkbox" id="create-token-remember" type="checkbox" />
               <label class="create-board__checkbox-label" for="create-token-remember">Remember token on this device</label>
-            </div>
-            <div class="create-board__token-actions">
-              <button class="create-board__button" id="create-token-apply" type="button">Update token</button>
             </div>
           </div>
           <div class="create-board__actions">
@@ -135,10 +129,8 @@ export function initializeNewBoardApp(hints: QueryHints = {}): void {
     stepMetadata: getRequired<HTMLDivElement>(root, ".create-board__step--metadata"),
     stepSquares: getRequired<HTMLDivElement>(root, ".create-board__step--squares"),
     repoInput: getRequired<HTMLInputElement>(root, "#create-repo-input"),
-    repoConnect: getRequired<HTMLButtonElement>(root, "#create-repo-connect"),
     tokenInput: getRequired<HTMLInputElement>(root, "#create-token-input"),
     tokenRemember: getRequired<HTMLInputElement>(root, "#create-token-remember"),
-    tokenApply: getRequired<HTMLButtonElement>(root, "#create-token-apply"),
     credentialsContinue: getRequired<HTMLButtonElement>(root, "#create-credentials-continue"),
     metadataBack: getRequired<HTMLButtonElement>(root, "#create-metadata-back"),
     metadataContinue: getRequired<HTMLButtonElement>(root, "#create-metadata-continue"),
@@ -221,24 +213,18 @@ function bindHandlers(elements: CreationElements, state: CreateBoardState): void
   const credentialsForm = getRequired<HTMLFormElement>(elements.root, "#create-credentials-form");
   credentialsForm.addEventListener("submit", (event) => {
     event.preventDefault();
-    void connectRepository(elements, state);
-  });
-
-  elements.repoConnect.addEventListener("click", (event) => {
-    event.preventDefault();
+    persistToken(elements, state);
     void connectRepository(elements, state);
   });
 
   elements.credentialsContinue.addEventListener("click", () => {
-    void handleCredentialsContinue(elements, state);
-  });
-
-  elements.tokenApply.addEventListener("click", () => {
     persistToken(elements, state);
+    void handleCredentialsContinue(elements, state);
   });
 
   elements.tokenRemember.addEventListener("change", () => {
     state.rememberToken = elements.tokenRemember.checked;
+    persistToken(elements, state);
   });
 
   elements.metadataBack.addEventListener("click", () => {
@@ -329,8 +315,6 @@ function persistToken(elements: CreationElements, state: CreateBoardState): void
   storeToken(rawToken || null, remember);
   state.token = rawToken || null;
   state.rememberToken = remember;
-  const message = rawToken ? "Token saved." : "Token cleared.";
-  setStatus(elements.status, { level: "success", text: message });
 }
 
 function applyMetadata(elements: CreationElements, state: CreateBoardState): boolean {

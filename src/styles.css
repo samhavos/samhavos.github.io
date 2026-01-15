@@ -612,8 +612,6 @@ select {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: clamp(1rem, 2.8vw, 2rem);
 }
 
 .create-board__header-main {
@@ -762,12 +760,6 @@ select {
 .create-board__checkbox-label {
   cursor: pointer;
   color: var(--app-muted);
-}
-
-.create-board__token-actions {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
 }
 
 .create-board__button {
