@@ -76,7 +76,7 @@
   --board-cross-mask: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Cpath d=%27M8 10 C20 20 30 30 40 38 C46 44 52 48 58 50%27 fill=%27none%27 stroke=%27white%27 stroke-width=%274.5%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3Cpath d=%27M56 10 C44 20 34 30 24 38 C18 44 14 48 8 50%27 fill=%27none%27 stroke=%27white%27 stroke-width=%274.5%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E");
   --board-square-fallback-font-stack: "Permanent Marker", "Schoolbell", "Segoe UI", sans-serif;
   --board-square-font: var(--board-square-fallback-font-stack);
-  --board-square-font-size: clamp(0.85rem, 3cqmin, 2.15rem);
+  --board-square-font-size: clamp(0.85rem, 4.8cqmin, 24.15rem);
   --board-square-font-scale: 1;
   --board-square-line-height: normal;
   --board-container-padding: clamp(0.5rem, 2vw, 1rem);
